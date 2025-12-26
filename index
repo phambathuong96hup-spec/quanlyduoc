@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khoa Dược</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 900px; margin-top: 30px; }
+        .card { border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 12px; }
+        .nav-pills .nav-link.active { background-color: #0f9d58; }
+        .nav-pills .nav-link { color: #555; font-weight: 600; }
+        .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #0f9d58; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container pb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-success">🏥 QUẢN LÝ CÔNG VIỆC KHOA DƯỢC</h2>
+        <p class="text-muted">Hệ thống quản lý trực tuyến</p>
+    </div>
+
+    <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded shadow-sm" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pills-input-tab" data-bs-toggle="pill" data-bs-target="#pills-input" type="button">📝 Giao Việc Mới</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-report-tab" data-bs-toggle="pill" data-bs-target="#pills-report" type="button" onclick="loadDashboard()">📊 Báo Cáo & Thống Kê</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+        
+        <div class="tab-pane fade show active" id="pills-input">
+            <div class="card p-4">
+                <form id="taskForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên công việc</label>
+                        <input type="text" class="form-control" name="taskName" required placeholder="Ví dụ: Kiểm kê kho chẵn...">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Người thực hiện</label>
+                            <select class="form-select" name="assignee" required>
+                                <option value="" disabled selected>-- Chọn nhân sự --</option>
+                                <optgroup label="⭐ Lãnh đạo Khoa">
+                                    <option value="Nguyễn Thị Hương Giang">DS.CKII Nguyễn Thị Hương Giang</option>
+                                    <option value="Trần Thị Huyền Trang">DS.CKI Trần Thị Huyền Trang</option>
+                                </optgroup>
+                                <optgroup label="💊 Tổ Dược Lâm Sàng">
+                                    <option value="Nguyễn Thị Hương Giang">Nguyễn Thị Hương Giang (Tổ trưởng)</option>
+                                    <option value="Phạm Bá Thương">Phạm Bá Thương</option>
+                                    <option value="Chu Đài Trang">Chu Đài Trang</option>
+                                    <option value="Lê Thị Thanh Nhàn">Lê Thị Thanh Nhàn</option>
+                                </optgroup>
+                                <optgroup label="📦 Tổ Kho">
+                                    <option value="Nguyễn Duy Tiến">Nguyễn Duy Tiến (Tổ trưởng)</option>
+                                    <option value="Nguyễn Thị Hằng">Nguyễn Thị Hằng</option>
+                                    <option value="Kiều Mạnh Toàn">Kiều Mạnh Toàn</option>
+                                    <option value="Đỗ Thị Nhật Lệ">Đỗ Thị Nhật Lệ</option>
+                                    <option value="Hà Thị Thảo">Hà Thị Thảo</option>
+                                    <option value="Nguyễn Tuấn Thành">Nguyễn Tuấn Thành</option>
+                                    <option value="Nguyễn Thị Thu Hà">Nguyễn Thị Thu Hà</option>
+                                </optgroup>
+                                <optgroup label="📊 Tổ Thống kê - Nghiệp vụ">
+                                    <option value="Trần Thị Huyền Trang">Trần Thị Huyền Trang (Tổ trưởng)</option>
+                                    <option value="Vũ Thị Hồng Hạnh">Vũ Thị Hồng Hạnh</option>
+                                </optgroup>
+                                <optgroup label="🚚 Tổ Cung ứng">
+                                    <option value="Nguyễn Thị Hương Giang">Nguyễn Thị Hương Giang</option>
+                                    <option value="Trần Thị Huyền Trang">Trần Thị Huyền Trang</option>
+                                    <option value="Lê Thị Thanh Nhàn">Lê Thị Thanh Nhàn</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Trạng thái</label>
+                            <select class="form-select" name="status">
+                                <option value="Todo">Todo (Chờ)</option>
+                                <option value="Doing" selected>Doing (Đang làm)</option>
+                                <option value="Done">Done (Xong)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Mức độ ưu tiên</label>
+                            <select class="form-select" name="priority">
+                                <option value="P1">🔴 P1 - Cao</option>
+                                <option value="P2" selected>🟡 P2 - Trung bình</option>
+                                <option value="P3">🟢 P3 - Thấp</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Hạn hoàn thành</label>
+                            <input type="date" class="form-control" name="deadline">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tiến độ: <span id="progressVal" class="text-success">0%</span></label>
+                        <input type="range" class="form-range" name="progress" min="0" max="100" step="10" value="0" oninput="document.getElementById('progressVal').innerText = this.value + '%'">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Ghi chú</label>
+                        <textarea class="form-control" name="notes" rows="2"></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success fw-bold py-2" id="submitBtn">LƯU CÔNG VIỆC</button>
+                    </div>
+                    
+                    <div class="loader mt-3" id="loader"></div>
+                    <div id="message" class="text-center mt-3 fw-bold"></div>
+                </form>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-report">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card p-3 h-100">
+                        <h6 class="text-center text-secondary">Tỉ lệ hoàn thành công việc</h6>
+                        <div id="piechart" style="width: 100%; height: 300px;"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card p-3 h-100">
+                        <h6 class="text-center text-secondary">Phân bổ công việc theo nhân sự</h6>
+                        <div id="barchart" style="width: 100%; height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="loadDashboard()">🔄 Cập nhật dữ liệu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // --- CẤU HÌNH ---
+    // QUAN TRỌNG: Dán link Web App (exec) của bạn vào đây
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys9IfBn4aKg5BTEcwgewY4IMt2N-yyI0-O8YH4fyGKyn1VCDqpQCxhieGfxP25rJF0WA/exec";
+
+    // 1. XỬ LÝ GỬI FORM
+    const form = document.getElementById('taskForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loader = document.getElementById('loader');
+    const msg = document.getElementById('message');
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        if(SCRIPT_URL.includes("HÃY_DÁN")) { alert("Bạn chưa dán link Web App vào code!"); return; }
+
+        submitBtn.disabled = true;
+        loader.style.display = 'block';
+        msg.innerText = "";
+
+        // Lấy dữ liệu form
+        let formData = new FormData(form);
+        let data = Object.fromEntries(formData.entries());
+
+        // Gửi POST request (Sử dụng mode 'no-cors' để tránh lỗi CORS cơ bản khi gửi đến Google Script)
+        // Tuy nhiên, để nhận phản hồi JSON ta cần dùng POST với text/plain
+        fetch(SCRIPT_URL + "?action=add", {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if(result.status === 'success') {
+                msg.className = "text-success text-center mt-3 fw-bold";
+                msg.innerText = "✅ " + result.message;
+                form.reset();
+                document.getElementById('progressVal').innerText = "0%";
+            } else {
+                throw new Error(result.message);
+            }
+        })
+        .catch(error => {
+            msg.className = "text-danger text-center mt-3 fw-bold";
+            msg.innerText = "⚠️ Lỗi: " + error.message;
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            loader.style.display = 'none';
+        });
+    });
+
+    // 2. XỬ LÝ BIỂU ĐỒ
+    google.charts.load('current', {'packages':['corechart']});
+
+    function loadDashboard() {
+        if(SCRIPT_URL.includes("HÃY_DÁN")) { alert("Chưa có link API!"); return; }
+        
+        // Gọi GET request
+        fetch(SCRIPT_URL + "?action=read")
+        .then(response => response.json())
+        .then(json => {
+            if(json.status === 'success') {
+                drawCharts(json.data);
+            }
+        })
+        .catch(err => console.error("Lỗi tải biểu đồ:", err));
+    }
+
+    function drawCharts(dataRows) {
+        if(!dataRows || dataRows.length === 0) return;
+
+        // Xử lý dữ liệu
+        var statusCount = {'Todo': 0, 'Doing': 0, 'Done': 0};
+        var personCount = {};
+
+        dataRows.forEach(row => {
+            // Cấu trúc mảng trả về từ Apps Script: [ID, Name, Status, Priority, Deadline, Note, Time, Assignee, Progress]
+            // Status là cột index 2, Assignee là cột index 7
+            let status = row[2];
+            let person = row[7];
+
+            if(statusCount[status] !== undefined) statusCount[status]++;
+            if(person) personCount[person] = (personCount[person] || 0) + 1;
+        });
+
+        // Vẽ Pie Chart
+        var pieData = google.visualization.arrayToDataTable([
+            ['Trạng thái', 'Số lượng'],
+            ['Todo (Chờ)', statusCount['Todo']],
+            ['Doing (Đang làm)', statusCount['Doing']],
+            ['Done (Hoàn thành)', statusCount['Done']]
+        ]);
+        var pieChart = new google.visualization.PieChart(document.getElementById('piechart'));
+        pieChart.draw(pieData, { colors: ['#dc3545', '#ffc107', '#198754'], is3D: true, chartArea:{width:'90%',height:'80%'} });
+
+        // Vẽ Bar Chart
+        var barArray = [['Nhân viên', 'Số việc', { role: 'style' }]];
+        Object.keys(personCount).sort().forEach(p => {
+            barArray.push([p, personCount[p], '#0d6efd']);
+        });
+        var barData = google.visualization.arrayToDataTable(barArray);
+        var barChart = new google.visualization.BarChart(document.getElementById('barchart'));
+        barChart.draw(barData, { legend: { position: "none" }, chartArea:{left:150, width:'60%'} });
+    }
+</script>
+
+</body>
+</html>
