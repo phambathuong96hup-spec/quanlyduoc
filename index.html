@@ -30,17 +30,36 @@
         .bg-doing { background-color: #ffc107; color: #333; } 
         .bg-done { background-color: #198754; color: white; } 
         .range-slider { width: 100%; cursor: pointer; height: 8px; accent-color: var(--primary-color); }
-        
-        /* Nút Zalo */
         .btn-zalo { background-color: #0068ff; color: white; border: none; font-weight: 500; font-size: 0.85rem; padding: 4px 10px; border-radius: 4px; }
-        .btn-zalo:hover { background-color: #0056d6; color: white; }
-
-        /* Style cho ô chọn nhiều người */
-        .form-select[multiple] {
-            height: 150px; /* Tăng chiều cao để dễ chọn */
-            border: 2px solid #e9ecef;
+        
+        /* CSS CHO DROPDOWN CHECKBOX */
+        .dropdown-menu-custom {
+            max-height: 350px;
+            overflow-y: auto;
+            width: 100%;
+            padding: 0;
         }
-        .multi-select-hint { font-size: 0.85rem; color: #6c757d; font-style: italic; margin-top: 5px; }
+        .group-header {
+            background-color: #f8f9fa;
+            padding: 8px 15px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .form-check {
+            padding: 8px 15px 8px 40px;
+            margin: 0;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        .form-check:hover { background-color: #f1f3f5; }
+        .form-check-input { cursor: pointer; transform: scale(1.2); margin-left: -25px; }
+        .form-check-label { cursor: pointer; width: 100%; display: inline-block; font-size: 0.95rem;}
+        
+        /* Ẩn thẻ select gốc */
+        #hiddenAssigneeSelect { display: none; }
     </style>
 </head>
 <body>
@@ -66,34 +85,45 @@
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="fw-bold fs-5">Người thực hiện</label>
-                                <select class="form-select" name="assignee" id="assigneeSelect" multiple required>
-                                    <optgroup label="⭐ Lãnh đạo Khoa">
-                                        <option value="Nguyễn Thị Hương Giang">DS.CKI Nguyễn Thị Hương Giang - Trưởng khoa</option>
-                                        <option value="Trần Thị Huyền Trang">DSĐH Trần Thị Huyền Trang - Phó khoa</option>
-                                    </optgroup>
-                                    <optgroup label="💊 Nhân viên khoa">
-                                        <option value="Hà Thu Trang">DSĐH Hà Thu Trang</option>
-                                        <option value="Phạm Bá Thương">DSĐH Phạm Bá Thương</option>
-                                        <option value="Chu Đài Trang">DS.CKI Chu Đài Trang</option>
-                                        <option value="Lê Thị Thanh Nhàn">DSĐH Lê Thị Thanh Nhàn</option>
-                                        <option value="Nguyễn Duy Tiến">DSĐH Nguyễn Duy Tiến</option>
-                                        <option value="Nguyễn Thị Hằng">DSĐH Nguyễn Thị Hằng</option>
-                                        <option value="Kiều Mạnh Toàn">DSĐH Kiều Mạnh Toàn</option>
-                                        <option value="Đỗ Thị Nhật Lệ">DSĐH Đỗ Thị Nhật Lệ</option>
-                                        <option value="Hà Thị Thảo">DS Hà Thị Thảo</option>
-                                        <option value="Nguyễn Tuấn Thành">DS Nguyễn Tuấn Thành</option>
-                                        <option value="Nguyễn Thị Thu Hà">DSĐH Nguyễn Thị Thu Hà</option>
-                                        <option value="Đoàn Thị Mai Hương">DSĐH Đoàn Thị Mai Hương</option>
-                                        <option value="Vũ Thị Hồng Hạnh">DSĐH Vũ Thị Hồng Hạnh</option>
-                                        <option value="Triệu Thị Vỵ">DSĐH Triệu Thị Vỵ</option>
-                                    </optgroup>
-                                </select>
-                                <div class="multi-select-hint">💡 Giữ phím <b>Ctrl</b> (Windows) hoặc <b>Cmd</b> (Mac) để chọn nhiều người cùng lúc.</div>
+                                <label class="fw-bold fs-5 mb-2">Người thực hiện</label>
+                                
+                                <select name="assignee" id="hiddenAssigneeSelect" multiple>
+                                    </select>
+
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center py-2" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                        <span id="selectedText">-- Chọn nhân sự --</span>
+                                        <span class="badge bg-success rounded-pill" id="selectedCount">0</span>
+                                    </button>
+                                    
+                                    <div class="dropdown-menu dropdown-menu-custom shadow" aria-labelledby="dropdownMenuButton">
+                                        
+                                        <div class="group-header">⭐ Lãnh đạo Khoa</div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Thị Hương Giang"><label class="form-check-label">DS.CKI Nguyễn Thị Hương Giang - Trưởng khoa</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Trần Thị Huyền Trang"><label class="form-check-label">DSĐH Trần Thị Huyền Trang - Phó khoa</label></div>
+
+                                        <div class="group-header">💊 Nhân viên khoa</div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Chu Đài Trang"><label class="form-check-label">DS.CKI Chu Đài Trang</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Phạm Bá Thương"><label class="form-check-label">DSĐH Phạm Bá Thương</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Lê Thị Thanh Nhàn"><label class="form-check-label">DSĐH Lê Thị Thanh Nhàn</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Duy Tiến"><label class="form-check-label">DSĐH Nguyễn Duy Tiến (Tổ trưởng)</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Thị Hằng"><label class="form-check-label">DSĐH Nguyễn Thị Hằng</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Kiều Mạnh Toàn"><label class="form-check-label">DSĐH Kiều Mạnh Toàn</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Đỗ Thị Nhật Lệ"><label class="form-check-label">DSĐH Đỗ Thị Nhật Lệ</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Thị Thu Hà"><label class="form-check-label">DSĐH Nguyễn Thị Thu Hà</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Hà Thị Thảo"><label class="form-check-label">DS Hà Thị Thảo</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Tuấn Thành"><label class="form-check-label">DS Nguyễn Tuấn Thành</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Vũ Thị Hồng Hạnh"><label class="form-check-label">DSĐH Vũ Thị Hồng Hạnh</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Hà Thu Trang"><label class="form-check-label">DSĐH Hà Thu Trang</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Đoàn Thị Mai Hương"><label class="form-check-label">DSĐH Đoàn Thị Mai Hương</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Triệu Thị Vỵ"><label class="form-check-label">DSĐH Triệu Thị Vỵ</label></div>
+
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label class="fw-bold fs-5">Trạng thái & Ưu tiên</label>
+                                <label class="fw-bold fs-5 mb-2">Trạng thái & Ưu tiên</label>
                                 <select class="form-select mb-3" name="status">
                                     <option value="Todo" selected>Todo (Chờ)</option>
                                     <option value="Doing">Doing (Đang làm)</option>
@@ -162,29 +192,70 @@
     
     let globalData = [];
 
-    // 1. GỬI FORM (XỬ LÝ ĐA NHÂN SỰ)
+    // --- LOGIC CHECKBOX DROPDOWN ---
+    const checkboxes = document.querySelectorAll('.dropdown-menu-custom .form-check-input');
+    const hiddenSelect = document.getElementById('hiddenAssigneeSelect');
+    const selectedText = document.getElementById('selectedText');
+    const selectedCount = document.getElementById('selectedCount');
+
+    // Khởi tạo select ẩn
+    checkboxes.forEach((cb, index) => {
+        // Tạo option ẩn
+        const option = document.createElement('option');
+        option.value = cb.value;
+        option.text = cb.value;
+        hiddenSelect.add(option);
+        
+        // Gán sự kiện
+        cb.addEventListener('change', () => {
+            hiddenSelect.options[index].selected = cb.checked;
+            updateDisplay();
+        });
+    });
+
+    function updateDisplay() {
+        let count = 0;
+        let names = [];
+        checkboxes.forEach(cb => {
+            if(cb.checked) {
+                count++;
+                names.push(cb.value); // Lấy tên ngắn gọn để hiển thị
+            }
+        });
+        
+        selectedCount.innerText = count;
+        if(count === 0) selectedText.innerText = "-- Chọn nhân sự --";
+        else if(count === 1) selectedText.innerText = names[0];
+        else if(count === 2) selectedText.innerText = names.join(", ");
+        else selectedText.innerText = `Đã chọn ${count} người`;
+    }
+
+    // 1. GỬI FORM
     document.getElementById('taskForm').addEventListener('submit', e => {
         e.preventDefault();
+        
+        if(selectedCount.innerText == "0") {
+            alert("⚠️ Vui lòng chọn ít nhất một người thực hiện!");
+            return;
+        }
+
         const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Đang lưu...";
         
-        // Lấy danh sách những người được chọn
-        const selectBox = document.getElementById('assigneeSelect');
-        const selectedValues = Array.from(selectBox.selectedOptions).map(option => option.value);
-        
-        // Nối tên lại bằng dấu phẩy
+        // Lấy danh sách tên từ hidden select
+        const selectedValues = Array.from(hiddenSelect.selectedOptions).map(option => option.value);
         const assigneeString = selectedValues.join(', ');
 
         const formData = new FormData(document.getElementById('taskForm'));
         const data = Object.fromEntries(formData.entries());
-        
-        // Ghi đè trường assignee bằng chuỗi đã nối
-        data.assignee = assigneeString;
+        data.assignee = assigneeString; 
 
         fetch(SCRIPT_URL + "?action=add", { method: 'POST', body: JSON.stringify(data) })
         .then(r => r.json()).then(res => {
             if(res.status === 'success') {
                 alert("✅ Đã giao việc cho: " + assigneeString);
                 document.getElementById('taskForm').reset();
+                checkboxes.forEach(cb => cb.checked = false); // Reset checkbox
+                updateDisplay();
                 document.querySelector('[data-bs-target="#pills-list"]').click();
             } else { alert("Lỗi: " + res.message); }
         }).finally(() => { btn.disabled = false; btn.innerText = "LƯU CÔNG VIỆC"; });
@@ -200,28 +271,22 @@
         });
     }
 
-    // ĐIỀN BỘ LỌC (TÁCH TÊN ĐỂ LỌC RIÊNG LẺ)
     function populateAssigneeFilter(data) {
         const select = document.getElementById('filterAssignee');
         const currentVal = select.value;
-        
-        // Logic tách tên: Ví dụ "Thương, Tiến" sẽ tách thành 2 người riêng
         let allPeople = [];
         data.forEach(row => {
             let assigneeStr = String(row[7] || "");
             let peopleInRow = assigneeStr.split(',').map(s => s.trim()).filter(n => n);
             allPeople.push(...peopleInRow);
         });
-
-        // Loại bỏ trùng lặp và sắp xếp
         const uniquePeople = [...new Set(allPeople)].sort();
-
         select.innerHTML = '<option value="">-- Tất cả nhân viên --</option>';
         uniquePeople.forEach(p => select.innerHTML += `<option value="${p}">${p}</option>`);
         select.value = currentVal;
     }
 
-    // 3. VẼ BẢNG (LOGIC LỌC THÔNG MINH)
+    // 3. VẼ BẢNG
     function renderTable() {
         const tbody = document.getElementById('taskTableBody'); tbody.innerHTML = "";
         const fName = document.getElementById('filterAssignee').value.toLowerCase().trim();
@@ -229,16 +294,13 @@
         const fText = document.getElementById('filterText').value.toLowerCase().trim();
 
         let filteredData = globalData.filter(row => {
-            let assignee = String(row[7] || "").toLowerCase(); // Chuỗi tên trong data
+            let assignee = String(row[7] || "").toLowerCase(); 
             let status = String(row[2] || "").trim();
             let taskName = String(row[1] || "").toLowerCase();
             
-            // Logic lọc tên: Dùng includes để tìm tên con trong chuỗi lớn
-            // Ví dụ: Lọc "Thương" sẽ tìm thấy trong "Thương, Tiến"
             let matchName = (fName === "" || assignee.includes(fName));
             let matchStatus = fStatus === "" || (status.toLowerCase() === fStatus.toLowerCase());
             let matchText = fText === "" || taskName.includes(fText);
-
             return matchName && matchStatus && matchText;
         });
 
@@ -286,7 +348,7 @@
         navigator.clipboard.writeText(text).then(() => { if(confirm("Đã COPY nội dung! Mở Zalo dán ngay?")) window.open('https://chat.zalo.me/', '_blank'); });
     }
 
-    // 4. BÁO CÁO & LỊCH (NÂNG CẤP ĐẾM SỐ LƯỢNG)
+    // 4. BÁO CÁO & LỊCH
     google.charts.load('current', {'packages':['corechart', 'bar']});
     function loadDashboard() {
         if(SCRIPT_URL.includes("DÁN_LINK")) return;
@@ -303,15 +365,13 @@
         
         data.forEach(row => {
             let status = String(row[2] || "").trim();
-            let assigneeStr = String(row[7] || ""); // Lấy chuỗi tên (VD: Thương, Tiến)
-            
+            let assigneeStr = String(row[7] || "");
             if(statusCount[status] !== undefined) statusCount[status]++; else statusCount['Doing'] = (statusCount['Doing'] || 0) + 1;
-
-            // Logic tách tên để đếm:
+            
             let peopleInRow = assigneeStr.split(',').map(s => s.trim()).filter(n => n);
             peopleInRow.forEach(person => {
                 if(!personStats[person]) personStats[person] = { count: 0 };
-                personStats[person].count++; // Cộng điểm cho từng người
+                personStats[person].count++;
             });
         });
 
