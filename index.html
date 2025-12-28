@@ -33,33 +33,16 @@
         .btn-zalo { background-color: #0068ff; color: white; border: none; font-weight: 500; font-size: 0.85rem; padding: 4px 10px; border-radius: 4px; }
         
         /* CSS CHO DROPDOWN CHECKBOX */
-        .dropdown-menu-custom {
-            max-height: 350px;
-            overflow-y: auto;
-            width: 100%;
-            padding: 0;
-        }
-        .group-header {
-            background-color: #f8f9fa;
-            padding: 8px 15px;
-            font-weight: bold;
-            color: var(--primary-color);
-            border-bottom: 1px solid #eee;
-            border-top: 1px solid #eee;
-            font-size: 0.9rem;
-        }
-        .form-check {
-            padding: 8px 15px 8px 40px;
-            margin: 0;
-            cursor: pointer;
-            border-bottom: 1px solid #f8f9fa;
-        }
+        .dropdown-menu-custom { max-height: 350px; overflow-y: auto; width: 100%; padding: 0; }
+        .group-header { background-color: #f8f9fa; padding: 8px 15px; font-weight: bold; color: var(--primary-color); border-bottom: 1px solid #eee; border-top: 1px solid #eee; font-size: 0.9rem; }
+        .form-check { padding: 8px 15px 8px 40px; margin: 0; cursor: pointer; border-bottom: 1px solid #f8f9fa; }
         .form-check:hover { background-color: #f1f3f5; }
         .form-check-input { cursor: pointer; transform: scale(1.2); margin-left: -25px; }
-        .form-check-label { cursor: pointer; width: 100%; display: inline-block; font-size: 0.95rem;}
-        
-        /* Ẩn thẻ select gốc */
         #hiddenAssigneeSelect { display: none; }
+        
+        /* CSS hiển thị ngày gia hạn */
+        .deadline-extended { color: #dc3545; font-weight: bold; }
+        .deadline-original { text-decoration: line-through; color: #999; font-size: 0.85em; display: block; }
     </style>
 </head>
 <body>
@@ -76,28 +59,20 @@
     </ul>
 
     <div class="tab-content">
-        
         <div class="tab-pane fade show active" id="pills-input">
             <div class="container" style="max-width: 800px;">
                 <div class="card card-custom p-4">
                     <form id="taskForm">
                         <div class="mb-3"><label class="fw-bold fs-5">Tên công việc</label><input type="text" class="form-control form-control-lg" name="taskName" required placeholder="Nhập tên đầu việc..."></div>
-                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="fw-bold fs-5 mb-2">Người thực hiện</label>
-                                
-                                <select name="assignee" id="hiddenAssigneeSelect" multiple>
-                                    </select>
-
+                                <select name="assignee" id="hiddenAssigneeSelect" multiple></select>
                                 <div class="dropdown">
                                     <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center py-2" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                                        <span id="selectedText">-- Chọn nhân sự --</span>
-                                        <span class="badge bg-success rounded-pill" id="selectedCount">0</span>
+                                        <span id="selectedText">-- Chọn nhân sự --</span><span class="badge bg-success rounded-pill" id="selectedCount">0</span>
                                     </button>
-                                    
-                                    <div class="dropdown-menu dropdown-menu-custom shadow" aria-labelledby="dropdownMenuButton">
-                                        
+                                    <div class="dropdown-menu dropdown-menu-custom shadow">
                                         <div class="group-header">⭐ Lãnh đạo Khoa</div>
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Thị Hương Giang"><label class="form-check-label">DS.CKI Nguyễn Thị Hương Giang - Trưởng khoa</label></div>
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="Trần Thị Huyền Trang"><label class="form-check-label">DSĐH Trần Thị Huyền Trang - Phó khoa</label></div>
@@ -117,25 +92,15 @@
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="Hà Thu Trang"><label class="form-check-label">DSĐH Hà Thu Trang</label></div>
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="Đoàn Thị Mai Hương"><label class="form-check-label">DSĐH Đoàn Thị Mai Hương</label></div>
                                         <div class="form-check"><input class="form-check-input" type="checkbox" value="Triệu Thị Vỵ"><label class="form-check-label">DSĐH Triệu Thị Vỵ</label></div>
-
                                     </div>
                                 </div>
                             </div>
-                            
                             <div class="col-md-6 mb-3">
                                 <label class="fw-bold fs-5 mb-2">Trạng thái & Ưu tiên</label>
-                                <select class="form-select mb-3" name="status">
-                                    <option value="Todo" selected>Todo (Chờ)</option>
-                                    <option value="Doing">Doing (Đang làm)</option>
-                                </select>
-                                <select class="form-select" name="priority">
-                                    <option value="P1">🔴 Cao</option>
-                                    <option value="P2" selected>🟡 Trung bình</option>
-                                    <option value="P3">🟢 Thấp</option>
-                                </select>
+                                <select class="form-select mb-3" name="status"><option value="Todo" selected>Todo (Chờ)</option><option value="Doing">Doing (Đang làm)</option></select>
+                                <select class="form-select" name="priority"><option value="P1">🔴 Cao</option><option value="P2" selected>🟡 Trung bình</option><option value="P3">🟢 Thấp</option></select>
                             </div>
                         </div>
-
                         <div class="mb-3"><label class="fw-bold fs-5">Deadline</label><input type="date" class="form-control" name="deadline"></div>
                         <div class="mb-4"><label class="fw-bold fs-5">Ghi chú</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
                         <button type="submit" class="btn btn-success w-100 fw-bold py-3 fs-5" id="submitBtn">LƯU CÔNG VIỆC</button>
@@ -152,7 +117,6 @@
                     <div class="col-md-3"><input type="text" id="filterText" class="form-control" placeholder="Tìm tên việc..." onkeyup="renderTable()"></div>
                     <div class="col-md-2"><button class="btn btn-primary w-100 fw-bold" onclick="loadTaskList()">🔄 Tải lại</button></div>
                 </div>
-
                 <div class="table-responsive">
                     <table class="table table-hover align-middle border" style="font-size: 1rem;">
                         <thead class="table-success">
@@ -162,13 +126,11 @@
                                 <th width="15%">Người làm</th>
                                 <th width="10%">Ngày tạo</th>
                                 <th width="10%">Deadline</th>
-                                <th width="10%">Trạng thái</th>
-                                <th width="10%">Hành động</th>
+                                <th width="8%">Trạng thái</th>
+                                <th width="12%">Hành động</th>
                             </tr>
                         </thead>
-                        <tbody id="taskTableBody">
-                            <tr><td colspan="7" class="text-center py-5">Đang tải dữ liệu...</td></tr>
-                        </tbody>
+                        <tbody id="taskTableBody"><tr><td colspan="7" class="text-center py-5">Đang tải...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -188,76 +150,46 @@
 
 <script>
     // --- CẤU HÌNH ---
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_9NKQHyVrnuNHs4hzRElnEpLILt6bubcMZkle6CUvo9NmV0VtXeulm_g7HzJnC7MqyQ/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz431QWLdlg-16z2RFGFHSzIpCfF4Dq1XRpmVjvuPQDql0iqBn0rYlf_Ka_C0Js7GaaYw/exec"; 
     
     let globalData = [];
 
-    // --- LOGIC CHECKBOX DROPDOWN ---
+    // --- CHECKBOX LOGIC ---
     const checkboxes = document.querySelectorAll('.dropdown-menu-custom .form-check-input');
     const hiddenSelect = document.getElementById('hiddenAssigneeSelect');
     const selectedText = document.getElementById('selectedText');
     const selectedCount = document.getElementById('selectedCount');
 
-    // Khởi tạo select ẩn
     checkboxes.forEach((cb, index) => {
-        // Tạo option ẩn
-        const option = document.createElement('option');
-        option.value = cb.value;
-        option.text = cb.value;
-        hiddenSelect.add(option);
-        
-        // Gán sự kiện
-        cb.addEventListener('change', () => {
-            hiddenSelect.options[index].selected = cb.checked;
-            updateDisplay();
-        });
+        const option = document.createElement('option'); option.value = cb.value; option.text = cb.value; hiddenSelect.add(option);
+        cb.addEventListener('change', () => { hiddenSelect.options[index].selected = cb.checked; updateDisplay(); });
     });
 
     function updateDisplay() {
-        let count = 0;
-        let names = [];
-        checkboxes.forEach(cb => {
-            if(cb.checked) {
-                count++;
-                names.push(cb.value); // Lấy tên ngắn gọn để hiển thị
-            }
-        });
-        
+        let count = 0, names = [];
+        checkboxes.forEach(cb => { if(cb.checked) { count++; names.push(cb.value); } });
         selectedCount.innerText = count;
         if(count === 0) selectedText.innerText = "-- Chọn nhân sự --";
-        else if(count === 1) selectedText.innerText = names[0];
-        else if(count === 2) selectedText.innerText = names.join(", ");
+        else if(count <= 2) selectedText.innerText = names.join(", ");
         else selectedText.innerText = `Đã chọn ${count} người`;
     }
 
     // 1. GỬI FORM
     document.getElementById('taskForm').addEventListener('submit', e => {
         e.preventDefault();
-        
-        if(selectedCount.innerText == "0") {
-            alert("⚠️ Vui lòng chọn ít nhất một người thực hiện!");
-            return;
-        }
-
+        if(selectedCount.innerText == "0") { alert("⚠️ Chọn ít nhất 1 người!"); return; }
         const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Đang lưu...";
         
-        // Lấy danh sách tên từ hidden select
-        const selectedValues = Array.from(hiddenSelect.selectedOptions).map(option => option.value);
-        const assigneeString = selectedValues.join(', ');
-
+        const selectedValues = Array.from(hiddenSelect.selectedOptions).map(opt => opt.value);
         const formData = new FormData(document.getElementById('taskForm'));
         const data = Object.fromEntries(formData.entries());
-        data.assignee = assigneeString; 
+        data.assignee = selectedValues.join(', '); 
 
         fetch(SCRIPT_URL + "?action=add", { method: 'POST', body: JSON.stringify(data) })
         .then(r => r.json()).then(res => {
-            if(res.status === 'success') {
-                alert("✅ Đã giao việc cho: " + assigneeString);
-                document.getElementById('taskForm').reset();
-                checkboxes.forEach(cb => cb.checked = false); // Reset checkbox
-                updateDisplay();
-                document.querySelector('[data-bs-target="#pills-list"]').click();
-            } else { alert("Lỗi: " + res.message); }
+            alert("✅ Đã giao việc!"); document.getElementById('taskForm').reset();
+            checkboxes.forEach(cb => cb.checked = false); updateDisplay();
+            document.querySelector('[data-bs-target="#pills-list"]').click();
         }).finally(() => { btn.disabled = false; btn.innerText = "LƯU CÔNG VIỆC"; });
     });
 
@@ -265,7 +197,7 @@
     function loadTaskList() {
         if(SCRIPT_URL.includes("DÁN_LINK")) { alert("Chưa dán Link API!"); return; }
         const tbody = document.getElementById('taskTableBody');
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div><br>Đang tải dữ liệu...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div></td></tr>';
         fetch(SCRIPT_URL + "?action=read").then(r => r.json()).then(res => {
             globalData = res.data; populateAssigneeFilter(globalData); renderTable();
         });
@@ -286,7 +218,7 @@
         select.value = currentVal;
     }
 
-    // 3. VẼ BẢNG
+    // 3. VẼ BẢNG (XỬ LÝ GIA HẠN)
     function renderTable() {
         const tbody = document.getElementById('taskTableBody'); tbody.innerHTML = "";
         const fName = document.getElementById('filterAssignee').value.toLowerCase().trim();
@@ -297,38 +229,55 @@
             let assignee = String(row[7] || "").toLowerCase(); 
             let status = String(row[2] || "").trim();
             let taskName = String(row[1] || "").toLowerCase();
-            
-            let matchName = (fName === "" || assignee.includes(fName));
-            let matchStatus = fStatus === "" || (status.toLowerCase() === fStatus.toLowerCase());
-            let matchText = fText === "" || taskName.includes(fText);
-            return matchName && matchStatus && matchText;
+            return (fName === "" || assignee.includes(fName)) && (fStatus === "" || status.toLowerCase() === fStatus.toLowerCase()) && (fText === "" || taskName.includes(fText));
         });
 
         filteredData.sort((a,b) => (String(a[2]).trim() === 'Done') - (String(b[2]).trim() === 'Done'));
 
         filteredData.forEach(row => {
+            // Index: 0:ID, 1:Name, 2:Status, 3:Priority, 4:Deadline, 5:Note, 6:Created, 7:Assignee, 8:Progress, 9:ExtendedDate
             let id = row[0]; let name = row[1]; let rawStatus = String(row[2] || "").trim();
-            let deadline = row[4] ? new Date(row[4]).toLocaleDateString('vi-VN') : '';
+            let originalDeadline = row[4] ? new Date(row[4]) : null;
+            let extendedDeadlineStr = row[9] ? row[9] : null; // Cột J
+            let extendedDeadline = extendedDeadlineStr ? new Date(extendedDeadlineStr) : null;
+            
             let createdDate = row[6] ? new Date(row[6]).toLocaleDateString('vi-VN') : '';
             let assignee = row[7]; let progress = parseInt(String(row[8] || "0").replace('%','')) || 0;
             let badgeClass = rawStatus === 'Done' ? 'bg-done' : (rawStatus === 'Doing' ? 'bg-doing' : 'bg-todo');
 
-            let doneBtn = rawStatus !== 'Done' ? `<button class="btn btn-outline-success btn-sm w-100" onclick="markAsDone('${id}')">✅ Xong</button>` : `<span class="text-success fw-bold">✓</span>`;
+            // XỬ LÝ HIỂN THỊ DEADLINE GIA HẠN
+            let deadlineHTML = "";
+            let displayDate = "";
             
+            if (extendedDeadline) {
+                // Có gia hạn
+                displayDate = extendedDeadline.toLocaleDateString('vi-VN');
+                deadlineHTML = `<span class="deadline-original">${originalDeadline ? originalDeadline.toLocaleDateString('vi-VN') : '...'}</span>
+                                <span class="deadline-extended">${displayDate}</span>`;
+            } else if (originalDeadline) {
+                // Không gia hạn
+                displayDate = originalDeadline.toLocaleDateString('vi-VN');
+                deadlineHTML = displayDate;
+            } else {
+                deadlineHTML = "";
+            }
+
+            let doneBtn = rawStatus !== 'Done' ? `<button class="btn btn-action btn-done" onclick="markAsDone('${id}')">✅ Xong</button>` : ``;
+            // Gửi Zalo sử dụng ngày hiển thị cuối cùng
+            let zaloBtn = rawStatus !== 'Done' ? `<button class="btn btn-action btn-zalo" onclick="sendZalo('${name}', '${assignee}', '${displayDate}', ${extendedDeadline ? true : false})">💬 Zalo</button>` : ``;
+
             let sliderHTML = rawStatus === 'Done' ? 
                 `<div class="progress" style="height: 24px;"><div class="progress-bar bg-success" style="width: 100%">100%</div></div>` : 
                 `<div class="d-flex align-items-center"><input type="range" class="range-slider me-2" min="0" max="100" step="10" value="${progress}" onchange="updateProgress('${id}', this.value)"><span class="badge bg-secondary" id="val-${id}" style="min-width: 45px;">${progress}%</span></div>`;
 
-            let zaloBtn = rawStatus !== 'Done' ? `<button class="btn btn-zalo btn-sm w-100" onclick="sendZalo('${name}', '${assignee}', '${deadline}')">💬 Zalo</button>` : ``;
-
             tbody.innerHTML += `<tr>
                 <td><div class="fw-bold text-primary text-break">${name}</div><small class="text-muted fst-italic">${row[5] || ''}</small></td>
                 <td>${sliderHTML}</td>
-                <td><span class="fw-bold">${assignee}</span></td>
+                <td><span class="fw-bold small">${assignee}</span></td>
                 <td><small>${createdDate}</small></td>
-                <td>${deadline}</td>
+                <td>${deadlineHTML}</td>
                 <td><span class="badge badge-status ${badgeClass}">${rawStatus}</span></td>
-                <td><div class="d-flex flex-column gap-2">${doneBtn}${zaloBtn}</div></td>
+                <td><div class="d-flex flex-column">${doneBtn}${zaloBtn}</div></td>
             </tr>`;
         });
     }
@@ -340,69 +289,70 @@
     }
     function markAsDone(taskId) {
         if (!confirm("Xác nhận hoàn thành?")) return;
-        fetch(SCRIPT_URL + "?action=update", { method: 'POST', body: JSON.stringify({ id: taskId }) })
-        .then(r => r.json()).then(res => { alert(res.message); loadTaskList(); });
+        fetch(SCRIPT_URL + "?action=update", { method: 'POST', body: JSON.stringify({ id: taskId }) }).then(r => r.json()).then(res => { alert(res.message); loadTaskList(); });
     }
-    function sendZalo(taskName, personName, deadline) {
-        const text = `⚠️ NHẮC VIỆC KHOA DƯỢC\n\nKính gửi: ${personName}\nCông việc: "${taskName}"\nHạn: ${deadline}\n\nĐề nghị cập nhật tiến độ.`;
+    
+    // Zalo thông minh: Biết được là gia hạn hay không
+    function sendZalo(taskName, personName, deadline, isExtended) {
+        let label = isExtended ? "Hạn chót (ĐÃ GIA HẠN):" : "Hạn chót:";
+        const text = `⚠️ NHẮC VIỆC KHOA DƯỢC\n\nKính gửi: ${personName}\nCông việc: "${taskName}"\n${label} ${deadline}\n\nĐề nghị cập nhật tiến độ.`;
         navigator.clipboard.writeText(text).then(() => { if(confirm("Đã COPY nội dung! Mở Zalo dán ngay?")) window.open('https://chat.zalo.me/', '_blank'); });
     }
 
-    // 4. BÁO CÁO & LỊCH
+    // 4. BÁO CÁO & LỊCH (UPDATE LỊCH THEO GIA HẠN)
     google.charts.load('current', {'packages':['corechart', 'bar']});
     function loadDashboard() {
         if(SCRIPT_URL.includes("DÁN_LINK")) return;
-        fetch(SCRIPT_URL + "?action=read").then(r => r.json()).then(res => {
-            drawCharts(res.data);
-            renderCalendar(res.data);
-        });
+        fetch(SCRIPT_URL + "?action=read").then(r => r.json()).then(res => { drawCharts(res.data); renderCalendar(res.data); });
     }
 
-    function drawCharts(data) {
+    function drawCharts(data) { /* ... Giữ nguyên ... */ 
         if(!data || data.length === 0) return;
         var statusCount = {'Todo': 0, 'Doing': 0, 'Done': 0};
         var personStats = {}; 
-        
         data.forEach(row => {
             let status = String(row[2] || "").trim();
             let assigneeStr = String(row[7] || "");
             if(statusCount[status] !== undefined) statusCount[status]++; else statusCount['Doing'] = (statusCount['Doing'] || 0) + 1;
-            
             let peopleInRow = assigneeStr.split(',').map(s => s.trim()).filter(n => n);
-            peopleInRow.forEach(person => {
-                if(!personStats[person]) personStats[person] = { count: 0 };
-                personStats[person].count++;
-            });
+            peopleInRow.forEach(person => { if(!personStats[person]) personStats[person] = { count: 0 }; personStats[person].count++; });
         });
-
         new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable([['S','C'],['Todo',statusCount['Todo']],['Doing',statusCount['Doing']],['Done',statusCount['Done']]]),{colors:['#dc3545','#ffc107','#198754'],is3D:true,legend:{position:'bottom'}, title: 'Tỉ lệ hoàn thành', titleTextStyle:{fontSize: 16}});
         var cA = [['NV','Số việc',{role:'style'}]]; Object.keys(personStats).sort().forEach(p=>cA.push([p,personStats[p].count,'#0d6efd']));
-        new google.visualization.ColumnChart(document.getElementById('barchart_count')).draw(google.visualization.arrayToDataTable(cA),{legend:{position:"none"}, title: 'Số lượng việc (Tính cả làm chung)', titleTextStyle:{fontSize: 16}});
+        new google.visualization.ColumnChart(document.getElementById('barchart_count')).draw(google.visualization.arrayToDataTable(cA),{legend:{position:"none"}, title: 'Số lượng việc', titleTextStyle:{fontSize: 16}});
     }
 
     function renderCalendar(data) {
         var calendarEl = document.getElementById('calendar');
         var events = data.map(row => {
-            let name = row[1]; let status = String(row[2] || "").trim(); let deadline = row[4]; let assignee = row[7];
+            let name = row[1]; let status = String(row[2] || "").trim(); 
+            let assignee = row[7];
+            
+            // LOGIC LẤY DEADLINE LỊCH: Ưu tiên ngày gia hạn (Cột J - index 9)
+            let rawDeadline = row[9] ? row[9] : row[4];
+            
             let color = '#3788d8'; if(status==='Done') color='#198754'; else if(status==='Todo') color='#dc3545'; else if(status==='Doing') color='#ffc107';
-            if(deadline) { let d=new Date(deadline).toISOString().split('T')[0]; return { title: `${name} (${assignee})`, start: d, color: color, textColor: status==='Doing'?'#333':'white' }; } return null;
+            
+            if(rawDeadline) { 
+                let d = new Date(rawDeadline).toISOString().split('T')[0]; 
+                let title = `${name} (${assignee})`;
+                // Thêm ký hiệu nếu là gia hạn
+                if (row[9]) title = `[GH] ${title}`;
+                
+                return { title: title, start: d, color: color, textColor: status==='Doing'?'#333':'white' }; 
+            } return null;
         }).filter(e=>e!==null);
         
-        if(window.myCalendar) { 
-            window.myCalendar.removeAllEvents(); 
-            window.myCalendar.addEventSource(events); 
-        } else {
+        if(window.myCalendar) { window.myCalendar.removeAllEvents(); window.myCalendar.addEventSource(events); } 
+        else {
             window.myCalendar = new FullCalendar.Calendar(calendarEl, { 
-                initialView: 'dayGridMonth', 
-                locale: 'vi', 
-                height: '85vh', 
+                initialView: 'dayGridMonth', locale: 'vi', height: '85vh', 
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' }, 
                 buttonText: { today: 'Hôm nay', month: 'Tháng', list: 'Danh sách' },
                 events: events, 
                 eventClick: function(i){ alert('📌 ' + i.event.title + '\n📅 Hạn: ' + i.event.start.toLocaleDateString('vi-VN')); } 
             });
-            window.myCalendar.render(); 
-            setTimeout(()=>{window.myCalendar.updateSize()},200);
+            window.myCalendar.render(); setTimeout(()=>{window.myCalendar.updateSize()},200);
         }
     }
 </script>
