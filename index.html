@@ -205,13 +205,13 @@
     // HÃY DÁN LINK WEB APP CỦA BẠN VÀO DƯỚI ĐÂY
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_9NKQHyVrnuNHs4hzRElnEpLILt6bubcMZkle6CUvo9NmV0VtXeulm_g7HzJnC7MqyQ/exec"; 
 
-    // Biến toàn cục lưu dữ liệu để lọc không cần gọi lại API
     let globalData = [];
 
     // 1. GỬI FORM (ADD TASK)
     document.getElementById('taskForm').addEventListener('submit', e => {
         e.preventDefault();
-        const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Đang lưu...";
+        const btn = document.getElementById('submitBtn'); 
+        btn.disabled = true; btn.innerText = "Đang lưu...";
         
         const formData = new FormData(document.getElementById('taskForm'));
         const data = Object.fromEntries(formData.entries());
@@ -222,30 +222,39 @@
                 alert("✅ " + res.message);
                 document.getElementById('taskForm').reset();
                 document.getElementById('progressVal').innerText = "0%";
+                // Tự động chuyển sang tab danh sách để xem việc vừa tạo
+                document.querySelector('[data-bs-target="#pills-list"]').click();
             } else { alert("Lỗi: " + res.message); }
         })
         .catch(err => alert("Lỗi kết nối!"))
         .finally(() => { btn.disabled = false; btn.innerText = "LƯU CÔNG VIỆC"; });
     });
 
-    // 2. TẢI DỮ LIỆU & RENDER DANH SÁCH
+    // 2. TẢI DỮ LIỆU
     function loadTaskList() {
         if(SCRIPT_URL.includes("DÁN_LINK")) { alert("Chưa dán Link API!"); return; }
-        document.getElementById('taskTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div><br>Đang tải dữ liệu...</td></tr>';
+        
+        const tbody = document.getElementById('taskTableBody');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div><br>Đang tải dữ liệu từ Google Sheet...</td></tr>';
 
         fetch(SCRIPT_URL + "?action=read")
         .then(r => r.json()).then(res => {
-            globalData = res.data; // Lưu vào biến toàn cục
-            populateAssigneeFilter(globalData); // Điền tên vào bộ lọc
-            renderTable(); // Vẽ bảng
+            console.log("Dữ liệu gốc tải về:", res.data); // Xem log để debug
+            globalData = res.data; 
+            populateAssigneeFilter(globalData);
+            renderTable();
+        })
+        .catch(err => {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Lỗi tải dữ liệu: ${err}</td></tr>`;
         });
     }
 
-    // Hàm điền tên nhân viên vào ô lọc tự động
+    // Điền tên vào bộ lọc
     function populateAssigneeFilter(data) {
         const select = document.getElementById('filterAssignee');
         const currentVal = select.value;
-        const people = [...new Set(data.map(row => row[7]).filter(n => n))].sort();
+        // Lọc lấy danh sách tên, loại bỏ dòng trống
+        const people = [...new Set(data.map(row => String(row[7] || "").trim()).filter(n => n))].sort();
         
         select.innerHTML = '<option value="">-- Tất cả nhân viên --</option>';
         people.forEach(p => {
@@ -254,71 +263,99 @@
         select.value = currentVal;
     }
 
-    // Hàm vẽ bảng (Có áp dụng lọc)
+    // --- HÀM VẼ BẢNG (ĐÃ NÂNG CẤP) ---
     function renderTable() {
         const tbody = document.getElementById('taskTableBody');
         tbody.innerHTML = "";
         
-        const fName = document.getElementById('filterAssignee').value;
-        const fStatus = document.getElementById('filterStatus').value;
-        const fText = document.getElementById('filterText').value.toLowerCase();
+        // Lấy giá trị lọc và chuẩn hóa (về chữ thường, bỏ dấu cách)
+        const fName = document.getElementById('filterAssignee').value.toLowerCase().trim();
+        const fStatus = document.getElementById('filterStatus').value; // Todo, Doing, Done
+        const fText = document.getElementById('filterText').value.toLowerCase().trim();
+
+        let count = 0; // Biến đếm số việc tìm thấy
 
         // Lọc dữ liệu
         let filteredData = globalData.filter(row => {
-            let assignee = row[7] || "";
-            let status = row[2] || "";
-            let taskName = (row[1] || "").toLowerCase();
+            // Lấy dữ liệu từ row, chuyển về chuỗi để tránh lỗi null
+            let assignee = String(row[7] || "").toLowerCase().trim();
+            let status = String(row[2] || "").trim(); // Cột trạng thái (Index 2)
+            let taskName = String(row[1] || "").toLowerCase();
+
+            // Logic so sánh
+            const matchName = (fName === "" || assignee === fName);
+            const matchText = (fText === "" || taskName.includes(fText));
             
-            return (fName === "" || assignee === fName) &&
-                   (fStatus === "" || status === fStatus) &&
-                   (fText === "" || taskName.includes(fText));
+            // So sánh trạng thái (Quan trọng: Xử lý lỏng lẻo hơn)
+            // Nếu lọc là "Doing", nó sẽ chấp nhận cả "Doing", "doing", "Doing "
+            let matchStatus = true;
+            if (fStatus !== "") {
+                matchStatus = (status.toLowerCase() === fStatus.toLowerCase());
+            }
+
+            return matchName && matchStatus && matchText;
         });
 
-        filteredData.sort((a,b) => (a[2] === 'Done') - (b[2] === 'Done'));
+        // Sắp xếp: Done xuống dưới cùng
+        filteredData.sort((a,b) => {
+            const statusA = String(a[2] || "").trim();
+            const statusB = String(b[2] || "").trim();
+            return (statusA === 'Done') - (statusB === 'Done');
+        });
 
+        // Hiển thị thông báo nếu không có dữ liệu
         if(filteredData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không tìm thấy công việc nào.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted fst-italic py-3">Không tìm thấy công việc nào phù hợp.<br><small>(Hãy kiểm tra lại cột Trạng thái trong Google Sheet)</small></td></tr>';
             return;
         }
 
+        // Vẽ từng dòng
         filteredData.forEach(row => {
-            // row: [ID, Name, Status, Priority, Deadline, Note, Time, Assignee, Progress]
             let id = row[0];
             let name = row[1];
-            let status = row[2];
+            let rawStatus = String(row[2] || "").trim(); // Lấy trạng thái gốc
             let deadline = row[4] ? new Date(row[4]).toLocaleDateString('vi-VN') : '';
             let assignee = row[7];
-            let progressStr = row[8] ? row[8].replace('%','') : '0';
-            let progress = parseInt(progressStr);
+            let progress = parseInt(String(row[8] || "0").replace('%','')) || 0;
 
-            let badgeClass = status === 'Done' ? 'bg-done' : (status === 'Doing' ? 'bg-doing' : 'bg-todo');
+            // Xử lý màu sắc Badge
+            let badgeClass = 'bg-secondary';
+            if(rawStatus === 'Todo') badgeClass = 'bg-todo';
+            else if(rawStatus === 'Doing') badgeClass = 'bg-doing';
+            else if(rawStatus === 'Done') badgeClass = 'bg-done';
+
+            // Màu thanh tiến độ
             let barColor = progress === 100 ? 'bg-success' : (progress < 50 ? 'bg-danger' : 'bg-warning');
 
-            let actionBtn = status !== 'Done' 
+            // Nút bấm
+            let actionBtn = rawStatus !== 'Done' 
                 ? `<button class="btn btn-outline-success btn-sm" onclick="markAsDone('${id}')">✅ Xong</button>` 
                 : `<span class="text-success fw-bold">✓</span>`;
 
             let tr = `<tr>
                 <td>
                     <div class="fw-bold text-primary">${name}</div>
-                    <small class="text-muted d-block fst-italic">${row[5]}</small>
+                    <small class="text-muted d-block fst-italic">${row[5] || ""}</small>
                     <div class="progress progress-sm w-100 bg-secondary-subtle">
                         <div class="progress-bar ${barColor}" style="width: ${progress}%"></div>
                     </div>
-                    <small style="font-size:10px;">Tiến độ: ${progress}%</small>
                 </td>
-                <td><span class="fw-bold">${assignee}</span></td>
+                <td><span class="fw-bold text-dark">${assignee}</span></td>
                 <td>${deadline}</td>
-                <td><span class="badge badge-status ${badgeClass}">${status}</span></td>
+                <td><span class="badge badge-status ${badgeClass}">${rawStatus}</span></td>
                 <td>${actionBtn}</td>
             </tr>`;
             tbody.innerHTML += tr;
+            count++;
         });
+
+        // Thêm dòng tổng kết số lượng (Để bạn biết có bao nhiêu việc)
+        tbody.innerHTML += `<tr class="table-light"><td colspan="5" class="text-center text-secondary small fw-bold">Hiển thị ${count} công việc</td></tr>`;
     }
 
     // 3. ĐÁNH DẤU HOÀN THÀNH
     function markAsDone(taskId) {
-        if (!confirm("Xác nhận hoàn thành 100% công việc này?")) return;
+        if (!confirm("Xác nhận hoàn thành?")) return;
         const btn = event.target; btn.innerText = "..."; btn.disabled = true;
 
         fetch(SCRIPT_URL + "?action=update", {
@@ -329,9 +366,8 @@
         });
     }
 
-    // 4. BÁO CÁO & BIỂU ĐỒ (DASHBOARD)
+    // 4. BÁO CÁO (DASHBOARD)
     google.charts.load('current', {'packages':['corechart', 'bar']});
-    
     function loadDashboard() {
         if(SCRIPT_URL.includes("DÁN_LINK")) { alert("Chưa dán Link API!"); return; }
         fetch(SCRIPT_URL + "?action=read").then(r => r.json()).then(res => {
@@ -346,20 +382,22 @@
         var personStats = {}; 
 
         data.forEach(row => {
-            let status = row[2];
+            let status = String(row[2] || "").trim(); // Chuẩn hóa status
             let person = row[7];
             
-            // Pie data
             if(statusCount[status] !== undefined) statusCount[status]++;
+            // Nếu trong sheet có status lạ (ví dụ "Đang làm"), gộp nó vào Doing hoặc tạo nhóm mới
+            else {
+                 // Tùy chọn: Gộp các status lạ vào
+                 statusCount['Doing'] = (statusCount['Doing'] || 0) + 1;
+            }
 
-            // Person data
             if(person) {
                 if(!personStats[person]) personStats[person] = { count: 0 };
                 personStats[person].count++;
             }
         });
 
-        // --- VẼ PIE CHART (TRẠNG THÁI) ---
         var pieData = google.visualization.arrayToDataTable([
             ['Trạng thái', 'Số lượng'],
             ['Todo', statusCount['Todo']], ['Doing', statusCount['Doing']], ['Done', statusCount['Done']]
@@ -368,7 +406,6 @@
             colors: ['#dc3545', '#ffc107', '#198754'], is3D: true, legend: {position:'bottom'}
         });
 
-        // --- VẼ BAR CHART (SỐ LƯỢNG VIỆC) ---
         var countArray = [['Nhân viên', 'Số việc', { role: 'style' }]];
         Object.keys(personStats).sort().forEach(p => {
             countArray.push([p, personStats[p].count, '#0d6efd']);
