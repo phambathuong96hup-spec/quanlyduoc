@@ -4,171 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Khoa Dược</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     
     <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
         .nav-pills .nav-link.active { background-color: #0f9d58; }
         .nav-pills .nav-link { color: #555; font-weight: 600; }
         
-        /* Style cho Badge trạng thái */
-        .badge-status { font-size: 0.85rem; padding: 6px 12px; border-radius: 30px; }
-        .bg-todo { background-color: #dc3545; color: white; } /* Đỏ */
-        .bg-doing { background-color: #ffc107; color: #333; } /* Vàng */
-        .bg-done { background-color: #198754; color: white; } /* Xanh */
-
-        /* Style cho thanh tiến độ nhỏ trong bảng */
-        .progress-sm { height: 10px; border-radius: 5px; margin-top: 5px; }
+        /* Badge Status */
+        .badge-status { font-size: 0.8rem; padding: 5px 10px; border-radius: 20px; }
+        .bg-todo { background-color: #dc3545; color: white; } 
+        .bg-doing { background-color: #ffc107; color: #333; } 
+        .bg-done { background-color: #198754; color: white; } 
         
-        /* Card shadow */
-        .card-custom { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 10px; }
+        /* Card & Calendar */
+        .card-custom { border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: 12px; }
+        #calendar { max-width: 100%; margin: 0 auto; min-height: 800px; font-family: Arial, sans-serif; }
+        .fc-toolbar-title { font-size: 1.5em !important; color: #0f9d58; font-weight: bold; }
+        .fc-day-today { background-color: #e8f5e9 !important; }
+
+        /* Style cho thanh trượt trong bảng */
+        .range-slider { width: 100%; cursor: pointer; height: 6px; }
     </style>
 </head>
 <body>
 
-<div class="container py-4">
+<div class="container-fluid px-4 py-4" style="max-width: 1400px;">
     <h3 class="text-center text-success fw-bold mb-4">🏥 QUẢN LÝ CÔNG VIỆC KHOA DƯỢC</h3>
 
     <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded shadow-sm" id="pills-tab" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-input">📝 Giao Việc</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-list" onclick="loadTaskList()">📋 Danh Sách & Lọc</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-report" onclick="loadDashboard()">📊 Báo Cáo Tổng Hợp</button>
-        </li>
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-input">📝 Giao Việc</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-list" onclick="loadTaskList()">📋 Danh Sách & Cập Nhật</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-report" onclick="loadDashboard()">📊 Báo Cáo & Lịch</button></li>
     </ul>
 
     <div class="tab-content">
         
         <div class="tab-pane fade show active" id="pills-input">
-            <div class="card card-custom p-4">
-                <form id="taskForm">
-                    <div class="mb-3">
-                        <label class="fw-bold">Tên công việc</label>
-                        <input type="text" class="form-control" name="taskName" required placeholder="Nhập tên đầu việc...">
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="fw-bold">Người thực hiện</label>
-                            <select class="form-select" name="assignee" required>
-                                <option value="" disabled selected>-- Chọn nhân sự --</option>
-                                <optgroup label="⭐ Lãnh đạo Khoa">
-                                    <option value="Nguyễn Thị Hương Giang">DS.CKI Nguyễn Thị Hương Giang</option>
-                                    <option value="Trần Thị Huyền Trang">DSĐH Trần Thị Huyền Trang</option>
-                                </optgroup>
-                                <optgroup label="💊 Tổ Dược Lâm Sàng">
-                                    <option value="Nguyễn Thị Hương Giang">DSĐH Nguyễn Thị Hương Giang (Tổ trưởng)</option>
-                                    <option value="Phạm Bá Thương">DSĐH Phạm Bá Thương</option>
-                                    <option value="Chu Đài Trang">DS.CKI Chu Đài Trang</option>
-                                    <option value="Lê Thị Thanh Nhàn">DSĐH Lê Thị Thanh Nhàn</option>
-                                </optgroup>
-                                <optgroup label="📦 Tổ Kho">
-                                    <option value="Nguyễn Duy Tiến">DSĐH Nguyễn Duy Tiến (Tổ trưởng)</option>
-                                    <option value="Nguyễn Thị Hằng">DSĐH Nguyễn Thị Hằng</option>
-                                    <option value="Kiều Mạnh Toàn">DSĐH Kiều Mạnh Toàn</option>
-                                    <option value="Đỗ Thị Nhật Lệ">DSĐH Đỗ Thị Nhật Lệ</option>
-                                    <option value="Hà Thị Thảo">DS Hà Thị Thảo</option>
-                                    <option value="Nguyễn Tuấn Thành">DS Nguyễn Tuấn Thành</option>
-                                    <option value="Nguyễn Thị Thu Hà">DSĐH Nguyễn Thị Thu Hà</option>
-                                </optgroup>
-                                <optgroup label="📊 Tổ Thống kê - Nghiệp vụ">
-                                    <option value="Trần Thị Huyền Trang">DSĐH Trần Thị Huyền Trang (Tổ trưởng)</option>
-                                    <option value="Vũ Thị Hồng Hạnh">DSĐH Vũ Thị Hồng Hạnh</option>
-                                </optgroup>
-                                <optgroup label="🚚 Tổ Cung ứng">
-                                    <option value="Nguyễn Thị Hương Giang">DS.CKI Nguyễn Thị Hương Giang</option>
-                                    <option value="Trần Thị Huyền Trang">DSĐH Trần Thị Huyền Trang</option>
-                                    <option value="Lê Thị Thanh Nhàn">DSĐH Lê Thị Thanh Nhàn</option>
-                                </optgroup>
-                            </select>
+            <div class="container" style="max-width: 800px;">
+                <div class="card card-custom p-4">
+                    <form id="taskForm">
+                        <div class="mb-3"><label class="fw-bold">Tên công việc</label><input type="text" class="form-control" name="taskName" required placeholder="Nhập tên đầu việc..."></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Người thực hiện</label>
+                                <select class="form-select" name="assignee" id="assigneeSelect" required>
+                                    <option value="" disabled selected>-- Chọn nhân sự --</option>
+                                    <optgroup label="⭐ Lãnh đạo Khoa">
+                                        <option value="Nguyễn Thị Hương Giang">DS.CKI Nguyễn Thị Hương Giang</option>
+                                        <option value="Trần Thị Huyền Trang">DSĐH Trần Thị Huyền Trang</option>
+                                    </optgroup>
+                                    <optgroup label="💊 Tổ Dược Lâm Sàng">
+                                        <option value="Nguyễn Thị Hương Giang">DSĐH Nguyễn Thị Hương Giang (Tổ trưởng)</option>
+                                        <option value="Phạm Bá Thương">DSĐH Phạm Bá Thương</option>
+                                        <option value="Chu Đài Trang">DS.CKI Chu Đài Trang</option>
+                                        <option value="Lê Thị Thanh Nhàn">DSĐH Lê Thị Thanh Nhàn</option>
+                                    </optgroup>
+                                    <optgroup label="📦 Tổ Kho">
+                                        <option value="Nguyễn Duy Tiến">DSĐH Nguyễn Duy Tiến (Tổ trưởng)</option>
+                                        <option value="Nguyễn Thị Hằng">DSĐH Nguyễn Thị Hằng</option>
+                                        <option value="Kiều Mạnh Toàn">DSĐH Kiều Mạnh Toàn</option>
+                                        <option value="Đỗ Thị Nhật Lệ">DSĐH Đỗ Thị Nhật Lệ</option>
+                                        <option value="Hà Thị Thảo">DS Hà Thị Thảo</option>
+                                        <option value="Nguyễn Tuấn Thành">DS Nguyễn Tuấn Thành</option>
+                                        <option value="Nguyễn Thị Thu Hà">DSĐH Nguyễn Thị Thu Hà</option>
+                                    </optgroup>
+                                    <optgroup label="📊 Tổ Thống kê - NV">
+                                        <option value="Trần Thị Huyền Trang">DSĐH Trần Thị Huyền Trang (Tổ trưởng)</option>
+                                        <option value="Vũ Thị Hồng Hạnh">DSĐH Vũ Thị Hồng Hạnh</option>
+                                    </optgroup>
+                                    <optgroup label="🚚 Tổ Cung ứng">
+                                        <option value="Nguyễn Thị Hương Giang">DS.CKI Nguyễn Thị Hương Giang</option>
+                                        <option value="Trần Thị Huyền Trang">DSĐH Trần Thị Huyền Trang</option>
+                                        <option value="Lê Thị Thanh Nhàn">DSĐH Lê Thị Thanh Nhàn</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Trạng thái ban đầu</label>
+                                <select class="form-select" name="status">
+                                    <option value="Todo" selected>Todo (Chờ)</option>
+                                    <option value="Doing">Doing (Đang làm)</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="fw-bold">Trạng thái</label>
-                            <select class="form-select" name="status">
-                                <option value="Todo">Todo (Chờ)</option>
-                                <option value="Doing" selected>Doing (Đang làm)</option>
-                                <option value="Done">Done (Xong)</option>
-                            </select>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Ưu tiên</label><select class="form-select" name="priority"><option value="P1">🔴 Cao</option><option value="P2" selected>🟡 TB</option><option value="P3">🟢 Thấp</option></select></div>
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Deadline</label><input type="date" class="form-control" name="deadline"></div>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="fw-bold">Ưu tiên</label>
-                            <select class="form-select" name="priority">
-                                <option value="P1">🔴 Cao</option>
-                                <option value="P2" selected>🟡 TB</option>
-                                <option value="P3">🟢 Thấp</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="fw-bold">Deadline</label>
-                            <input type="date" class="form-control" name="deadline">
-                        </div>
-                    </div>
+                        <div class="mb-3"><label class="fw-bold">Ghi chú</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
 
-                    <div class="mb-3">
-                        <label class="fw-bold">Tiến độ: <span id="progressVal" class="text-success fw-bold">0%</span></label>
-                        <input type="range" class="form-range" name="progress" min="0" max="100" step="10" value="0" oninput="document.getElementById('progressVal').innerText = this.value + '%'">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="fw-bold">Ghi chú</label>
-                        <textarea class="form-control" name="notes" rows="2"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-success w-100 fw-bold py-2" id="submitBtn">LƯU CÔNG VIỆC</button>
-                    <div id="message" class="text-center mt-2 fw-bold"></div>
-                </form>
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2" id="submitBtn">LƯU CÔNG VIỆC</button>
+                    </form>
+                </div>
             </div>
         </div>
 
         <div class="tab-pane fade" id="pills-list">
             <div class="card card-custom p-3">
-                
-                <div class="row g-2 mb-3 bg-light p-3 rounded">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold small">🔍 Lọc theo tên người</label>
-                        <select id="filterAssignee" class="form-select form-select-sm" onchange="renderTable()">
-                            <option value="">-- Tất cả nhân viên --</option>
-                            </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold small">📌 Lọc trạng thái</label>
-                        <select id="filterStatus" class="form-select form-select-sm" onchange="renderTable()">
-                            <option value="">-- Tất cả --</option>
-                            <option value="Todo">Todo (Chưa làm)</option>
-                            <option value="Doing">Doing (Đang làm)</option>
-                            <option value="Done">Done (Hoàn thành)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                         <label class="form-label fw-bold small">📅 Tìm tên việc</label>
-                         <input type="text" id="filterText" class="form-control form-control-sm" placeholder="Nhập từ khóa..." onkeyup="renderTable()">
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-primary btn-sm w-100" onclick="loadTaskList()">🔄 Tải lại</button>
-                    </div>
+                <div class="row g-2 mb-3 bg-light p-3 rounded mx-0">
+                    <div class="col-md-4"><select id="filterAssignee" class="form-select form-select-sm" onchange="renderTable()"><option value="">-- Tất cả nhân viên --</option></select></div>
+                    <div class="col-md-3"><select id="filterStatus" class="form-select form-select-sm" onchange="renderTable()"><option value="">-- Tất cả TT --</option><option value="Todo">Todo</option><option value="Doing">Doing</option><option value="Done">Done</option></select></div>
+                    <div class="col-md-3"><input type="text" id="filterText" class="form-control form-control-sm" placeholder="Tìm việc..." onkeyup="renderTable()"></div>
+                    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="loadTaskList()">🔄 Tải lại</button></div>
                 </div>
 
                 <div class="table-responsive">
                     <table class="table table-hover align-middle border">
                         <thead class="table-light">
                             <tr>
-                                <th width="35%">Công việc / Tiến độ</th>
-                                <th width="20%">Người làm</th>
-                                <th width="15%">Hạn chót</th>
-                                <th width="15%">Trạng thái</th>
-                                <th width="15%">Xác nhận</th>
+                                <th width="20%">Công việc</th>
+                                <th width="20%">Tiến độ (Kéo chỉnh)</th> <th width="15%">Người làm</th>
+                                <th width="10%">Ngày tạo</th>
+                                <th width="10%">Deadline</th>
+                                <th width="10%">Trạng thái</th>
+                                <th width="15%">Hành động</th>
                             </tr>
                         </thead>
                         <tbody id="taskTableBody">
-                            <tr><td colspan="5" class="text-center py-4">Đang tải dữ liệu...</td></tr>
+                            <tr><td colspan="7" class="text-center py-4">Đang tải dữ liệu...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -176,25 +134,16 @@
         </div>
 
         <div class="tab-pane fade" id="pills-report">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="card card-custom p-3 h-100">
-                        <h6 class="text-center text-secondary fw-bold">Tỉ lệ hoàn thành công việc</h6>
-                        <div id="piechart" style="width: 100%; height: 350px;"></div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card card-custom p-3 h-100">
-                        <h6 class="text-center text-secondary fw-bold">Số lượng việc được giao</h6>
-                        <div id="barchart_count" style="width: 100%; height: 350px;"></div>
-                    </div>
-                </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6"><div class="card card-custom p-3 h-100"><div id="piechart" style="height:300px;"></div></div></div>
+                <div class="col-md-6"><div class="card card-custom p-3 h-100"><div id="barchart_count" style="height:300px;"></div></div></div>
             </div>
-            <div class="text-center mt-3">
-                <button class="btn btn-outline-primary" onclick="loadDashboard()">🔄 Cập nhật báo cáo</button>
+            
+            <div class="card card-custom p-4">
+                <h5 class="text-success fw-bold mb-3">📅 LỊCH DEADLINE CÔNG VIỆC</h5>
+                <div id="calendar"></div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -202,17 +151,17 @@
 
 <script>
     // --- CẤU HÌNH ---
-    // HÃY DÁN LINK WEB APP CỦA BẠN VÀO DƯỚI ĐÂY
+    // Giữ nguyên link script của bạn
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_9NKQHyVrnuNHs4hzRElnEpLILt6bubcMZkle6CUvo9NmV0VtXeulm_g7HzJnC7MqyQ/exec"; 
-
+    
     let globalData = [];
 
     // 1. GỬI FORM (ADD TASK)
     document.getElementById('taskForm').addEventListener('submit', e => {
         e.preventDefault();
-        const btn = document.getElementById('submitBtn'); 
-        btn.disabled = true; btn.innerText = "Đang lưu...";
+        const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Đang lưu...";
         
+        // Lấy dữ liệu form
         const formData = new FormData(document.getElementById('taskForm'));
         const data = Object.fromEntries(formData.entries());
 
@@ -221,8 +170,7 @@
             if(res.status === 'success') {
                 alert("✅ " + res.message);
                 document.getElementById('taskForm').reset();
-                document.getElementById('progressVal').innerText = "0%";
-                // Tự động chuyển sang tab danh sách để xem việc vừa tạo
+                // Chuyển sang tab danh sách
                 document.querySelector('[data-bs-target="#pills-list"]').click();
             } else { alert("Lỗi: " + res.message); }
         })
@@ -233,189 +181,157 @@
     // 2. TẢI DỮ LIỆU
     function loadTaskList() {
         if(SCRIPT_URL.includes("DÁN_LINK")) { alert("Chưa dán Link API!"); return; }
-        
         const tbody = document.getElementById('taskTableBody');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div><br>Đang tải dữ liệu từ Google Sheet...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-success"></div><br>Đang tải dữ liệu...</td></tr>';
 
-        fetch(SCRIPT_URL + "?action=read")
-        .then(r => r.json()).then(res => {
-            console.log("Dữ liệu gốc tải về:", res.data); // Xem log để debug
-            globalData = res.data; 
-            populateAssigneeFilter(globalData);
-            renderTable();
-        })
-        .catch(err => {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Lỗi tải dữ liệu: ${err}</td></tr>`;
+        fetch(SCRIPT_URL + "?action=read").then(r => r.json()).then(res => {
+            globalData = res.data; populateAssigneeFilter(globalData); renderTable();
         });
     }
 
-    // Điền tên vào bộ lọc
     function populateAssigneeFilter(data) {
         const select = document.getElementById('filterAssignee');
         const currentVal = select.value;
-        // Lọc lấy danh sách tên, loại bỏ dòng trống
         const people = [...new Set(data.map(row => String(row[7] || "").trim()).filter(n => n))].sort();
-        
         select.innerHTML = '<option value="">-- Tất cả nhân viên --</option>';
-        people.forEach(p => {
-            select.innerHTML += `<option value="${p}">${p}</option>`;
-        });
+        people.forEach(p => select.innerHTML += `<option value="${p}">${p}</option>`);
         select.value = currentVal;
     }
 
-    // --- HÀM VẼ BẢNG (ĐÃ NÂNG CẤP) ---
+    // 3. VẼ BẢNG (VỚI THANH KÉO TIẾN ĐỘ)
     function renderTable() {
-        const tbody = document.getElementById('taskTableBody');
-        tbody.innerHTML = "";
+        const tbody = document.getElementById('taskTableBody'); tbody.innerHTML = "";
         
-        // Lấy giá trị lọc và chuẩn hóa (về chữ thường, bỏ dấu cách)
         const fName = document.getElementById('filterAssignee').value.toLowerCase().trim();
-        const fStatus = document.getElementById('filterStatus').value; // Todo, Doing, Done
+        const fStatus = document.getElementById('filterStatus').value;
         const fText = document.getElementById('filterText').value.toLowerCase().trim();
 
-        let count = 0; // Biến đếm số việc tìm thấy
-
-        // Lọc dữ liệu
         let filteredData = globalData.filter(row => {
-            // Lấy dữ liệu từ row, chuyển về chuỗi để tránh lỗi null
             let assignee = String(row[7] || "").toLowerCase().trim();
-            let status = String(row[2] || "").trim(); // Cột trạng thái (Index 2)
+            let status = String(row[2] || "").trim();
             let taskName = String(row[1] || "").toLowerCase();
-
-            // Logic so sánh
-            const matchName = (fName === "" || assignee === fName);
-            const matchText = (fText === "" || taskName.includes(fText));
-            
-            // So sánh trạng thái (Quan trọng: Xử lý lỏng lẻo hơn)
-            // Nếu lọc là "Doing", nó sẽ chấp nhận cả "Doing", "doing", "Doing "
-            let matchStatus = true;
-            if (fStatus !== "") {
-                matchStatus = (status.toLowerCase() === fStatus.toLowerCase());
-            }
-
-            return matchName && matchStatus && matchText;
+            let matchStatus = fStatus === "" || (status.toLowerCase() === fStatus.toLowerCase());
+            return (fName === "" || assignee === fName) && matchStatus && (fText === "" || taskName.includes(fText));
         });
 
-        // Sắp xếp: Done xuống dưới cùng
-        filteredData.sort((a,b) => {
-            const statusA = String(a[2] || "").trim();
-            const statusB = String(b[2] || "").trim();
-            return (statusA === 'Done') - (statusB === 'Done');
-        });
+        filteredData.sort((a,b) => (String(a[2]).trim() === 'Done') - (String(b[2]).trim() === 'Done'));
 
-        // Hiển thị thông báo nếu không có dữ liệu
-        if(filteredData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted fst-italic py-3">Không tìm thấy công việc nào phù hợp.<br><small>(Hãy kiểm tra lại cột Trạng thái trong Google Sheet)</small></td></tr>';
-            return;
-        }
-
-        // Vẽ từng dòng
         filteredData.forEach(row => {
+            // Index: 0:ID, 1:Name, 2:Status, 3:Priority, 4:Deadline, 5:Note, 6:CreatedDate, 7:Assignee, 8:Progress
             let id = row[0];
             let name = row[1];
-            let rawStatus = String(row[2] || "").trim(); // Lấy trạng thái gốc
+            let rawStatus = String(row[2] || "").trim();
             let deadline = row[4] ? new Date(row[4]).toLocaleDateString('vi-VN') : '';
+            let createdDate = row[6] ? new Date(row[6]).toLocaleDateString('vi-VN') : '';
             let assignee = row[7];
             let progress = parseInt(String(row[8] || "0").replace('%','')) || 0;
 
-            // Xử lý màu sắc Badge
-            let badgeClass = 'bg-secondary';
-            if(rawStatus === 'Todo') badgeClass = 'bg-todo';
-            else if(rawStatus === 'Doing') badgeClass = 'bg-doing';
-            else if(rawStatus === 'Done') badgeClass = 'bg-done';
+            let badgeClass = rawStatus === 'Done' ? 'bg-done' : (rawStatus === 'Doing' ? 'bg-doing' : 'bg-todo');
 
-            // Màu thanh tiến độ
-            let barColor = progress === 100 ? 'bg-success' : (progress < 50 ? 'bg-danger' : 'bg-warning');
-
-            // Nút bấm
-            let actionBtn = rawStatus !== 'Done' 
-                ? `<button class="btn btn-outline-success btn-sm" onclick="markAsDone('${id}')">✅ Xong</button>` 
+            // Nút Done
+            let doneBtn = rawStatus !== 'Done' 
+                ? `<button class="btn btn-outline-success btn-sm w-100" onclick="markAsDone('${id}')">✅ Xong</button>` 
                 : `<span class="text-success fw-bold">✓</span>`;
 
-            let tr = `<tr>
-                <td>
-                    <div class="fw-bold text-primary">${name}</div>
-                    <small class="text-muted d-block fst-italic">${row[5] || ""}</small>
-                    <div class="progress progress-sm w-100 bg-secondary-subtle">
-                        <div class="progress-bar ${barColor}" style="width: ${progress}%"></div>
-                    </div>
-                </td>
-                <td><span class="fw-bold text-dark">${assignee}</span></td>
+            // THANH TRƯỢT TIẾN ĐỘ (LOGIC MỚI)
+            let sliderHTML = '';
+            if(rawStatus === 'Done') {
+                sliderHTML = `<div class="progress" style="height: 20px;"><div class="progress-bar bg-success" style="width: 100%">100%</div></div>`;
+            } else {
+                sliderHTML = `
+                    <div class="d-flex align-items-center">
+                        <input type="range" class="range-slider form-range me-2" min="0" max="100" step="10" value="${progress}" 
+                            onchange="updateProgress('${id}', this.value)" 
+                            title="Kéo để cập nhật tiến độ">
+                        <span class="badge bg-secondary" id="val-${id}" style="min-width: 40px;">${progress}%</span>
+                    </div>`;
+            }
+
+            tbody.innerHTML += `<tr>
+                <td><div class="fw-bold text-primary">${name}</div><small class="text-muted fst-italic">${row[5] || ''}</small></td>
+                <td>${sliderHTML}</td>
+                <td><span class="fw-bold">${assignee}</span></td>
+                <td><small>${createdDate}</small></td>
                 <td>${deadline}</td>
                 <td><span class="badge badge-status ${badgeClass}">${rawStatus}</span></td>
-                <td>${actionBtn}</td>
+                <td><div class="d-flex flex-column gap-1">${doneBtn}</div></td>
             </tr>`;
-            tbody.innerHTML += tr;
-            count++;
         });
-
-        // Thêm dòng tổng kết số lượng (Để bạn biết có bao nhiêu việc)
-        tbody.innerHTML += `<tr class="table-light"><td colspan="5" class="text-center text-secondary small fw-bold">Hiển thị ${count} công việc</td></tr>`;
     }
 
-    // 3. ĐÁNH DẤU HOÀN THÀNH
+    // 4. HÀM CẬP NHẬT TIẾN ĐỘ (MỚI)
+    function updateProgress(id, value) {
+        document.getElementById(`val-${id}`).innerText = value + "%";
+        
+        fetch(SCRIPT_URL + "?action=update_progress", {
+            method: 'POST',
+            body: JSON.stringify({ id: id, progress: value })
+        })
+        .then(r => r.json())
+        .then(res => {
+            console.log(res.message);
+            // Nếu kéo 100% thì reload lại bảng để cập nhật trạng thái thành Done
+            if(value == 100) loadTaskList(); 
+        })
+        .catch(err => alert("Lỗi kết nối!"));
+    }
+
     function markAsDone(taskId) {
         if (!confirm("Xác nhận hoàn thành?")) return;
-        const btn = event.target; btn.innerText = "..."; btn.disabled = true;
-
-        fetch(SCRIPT_URL + "?action=update", {
-            method: 'POST', body: JSON.stringify({ id: taskId })
-        }).then(r => r.json()).then(res => {
-            alert(res.message);
-            loadTaskList(); 
-        });
+        fetch(SCRIPT_URL + "?action=update", { method: 'POST', body: JSON.stringify({ id: taskId }) })
+        .then(r => r.json()).then(res => { alert(res.message); loadTaskList(); });
     }
 
-    // 4. BÁO CÁO (DASHBOARD)
+    // 5. BÁO CÁO & LỊCH
     google.charts.load('current', {'packages':['corechart', 'bar']});
     function loadDashboard() {
-        if(SCRIPT_URL.includes("DÁN_LINK")) { alert("Chưa dán Link API!"); return; }
+        if(SCRIPT_URL.includes("DÁN_LINK")) return;
         fetch(SCRIPT_URL + "?action=read").then(r => r.json()).then(res => {
             drawCharts(res.data);
+            renderCalendar(res.data);
         });
     }
 
     function drawCharts(data) {
         if(!data || data.length === 0) return;
-
         var statusCount = {'Todo': 0, 'Doing': 0, 'Done': 0};
         var personStats = {}; 
-
         data.forEach(row => {
-            let status = String(row[2] || "").trim(); // Chuẩn hóa status
+            let status = String(row[2] || "").trim();
             let person = row[7];
-            
-            if(statusCount[status] !== undefined) statusCount[status]++;
-            // Nếu trong sheet có status lạ (ví dụ "Đang làm"), gộp nó vào Doing hoặc tạo nhóm mới
-            else {
-                 // Tùy chọn: Gộp các status lạ vào
-                 statusCount['Doing'] = (statusCount['Doing'] || 0) + 1;
-            }
-
-            if(person) {
-                if(!personStats[person]) personStats[person] = { count: 0 };
-                personStats[person].count++;
-            }
+            if(statusCount[status] !== undefined) statusCount[status]++; else statusCount['Doing'] = (statusCount['Doing'] || 0) + 1;
+            if(person) { if(!personStats[person]) personStats[person] = { count: 0 }; personStats[person].count++; }
         });
+        new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable([['S','C'],['Todo',statusCount['Todo']],['Doing',statusCount['Doing']],['Done',statusCount['Done']]]),{colors:['#dc3545','#ffc107','#198754'],is3D:true,legend:{position:'bottom'}});
+        var cA = [['NV','Số việc',{role:'style'}]]; Object.keys(personStats).sort().forEach(p=>cA.push([p,personStats[p].count,'#0d6efd']));
+        new google.visualization.ColumnChart(document.getElementById('barchart_count')).draw(google.visualization.arrayToDataTable(cA),{legend:{position:"none"}});
+    }
 
-        var pieData = google.visualization.arrayToDataTable([
-            ['Trạng thái', 'Số lượng'],
-            ['Todo', statusCount['Todo']], ['Doing', statusCount['Doing']], ['Done', statusCount['Done']]
-        ]);
-        new google.visualization.PieChart(document.getElementById('piechart')).draw(pieData, {
-            colors: ['#dc3545', '#ffc107', '#198754'], is3D: true, legend: {position:'bottom'}
-        });
-
-        var countArray = [['Nhân viên', 'Số việc', { role: 'style' }]];
-        Object.keys(personStats).sort().forEach(p => {
-            countArray.push([p, personStats[p].count, '#0d6efd']);
-        });
-        new google.visualization.ColumnChart(document.getElementById('barchart_count')).draw(
-            google.visualization.arrayToDataTable(countArray), 
-            { legend: { position: "none" }, vAxis: {title: 'Số lượng đầu việc'} }
-        );
+    // HÀM VẼ LỊCH (ĐÃ THÊM VÀO)
+    function renderCalendar(data) {
+        var calendarEl = document.getElementById('calendar');
+        var events = data.map(row => {
+            let name = row[1]; let status = String(row[2] || "").trim(); let deadline = row[4]; let assignee = row[7];
+            let color = '#3788d8'; if(status==='Done') color='#198754'; else if(status==='Todo') color='#dc3545'; else if(status==='Doing') color='#ffc107';
+            if(deadline) { let d=new Date(deadline).toISOString().split('T')[0]; return { title: `${name} (${assignee})`, start: d, color: color, textColor: status==='Doing'?'black':'white' }; } return null;
+        }).filter(e=>e!==null);
+        
+        if(window.myCalendar) { 
+            window.myCalendar.removeAllEvents(); 
+            window.myCalendar.addEventSource(events); 
+        } else {
+            window.myCalendar = new FullCalendar.Calendar(calendarEl, { 
+                initialView: 'dayGridMonth', 
+                locale: 'vi', 
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' }, 
+                height: 800, 
+                events: events, 
+                eventClick: function(i){ alert(i.event.title + '\nDeadline: ' + i.event.start.toLocaleDateString('vi-VN')); } 
+            });
+            window.myCalendar.render(); 
+            setTimeout(()=>{window.myCalendar.updateSize()},200);
+        }
     }
 </script>
-
 </body>
 </html>
