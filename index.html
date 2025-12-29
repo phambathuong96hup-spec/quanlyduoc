@@ -22,17 +22,19 @@
         .badge-status { font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; }
         .bg-todo { background-color: #dc3545; color: white; } .bg-doing { background-color: #ffc107; color: #333; } .bg-done { background-color: #198754; color: white; }
         .range-slider { width: 100%; cursor: pointer; height: 8px; accent-color: var(--primary-color); }
+        
         .btn-action { font-size: 0.8rem; font-weight: 500; padding: 4px 8px; width: 100%; text-align: left; margin-bottom: 4px; border-radius: 4px; border: none; transition: 0.2s; }
         .btn-email { background-color: #fff3cd; color: #856404; } .btn-email:hover { background-color: #ffeeba; }
         .btn-done { background-color: #d1e7dd; color: #0f5132; } .btn-done:hover { background-color: #badbcc; }
 
+        /* Dropdown & Checkbox */
         .dropdown-menu-custom { max-height: 300px; overflow-y: auto; width: 100%; padding: 0; }
         .group-header { background-color: #f8f9fa; padding: 8px 15px; font-weight: bold; color: var(--primary-color); font-size: 0.9rem; }
         .form-check { padding: 8px 15px 8px 40px; margin: 0; cursor: pointer; border-bottom: 1px solid #f8f9fa; }
         .form-check:hover { background-color: #f1f3f5; }
         .form-check-input { cursor: pointer; transform: scale(1.2); margin-left: -25px; }
-        #hiddenAssigneeSelect { display: none; }
         
+        #hiddenAssigneeSelect { display: none; }
         .deadline-extended { color: #dc3545; font-weight: bold; }
         .deadline-original { text-decoration: line-through; color: #999; font-size: 0.85em; display: block; }
         .admin-only { display: none !important; }
@@ -65,11 +67,14 @@
                         <div class="mb-3">
                             <label class="fw-bold">Người thực hiện</label>
                             <select name="assignee" id="hiddenAssigneeSelect" multiple></select>
+                            
                             <div class="dropdown">
                                 <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                                    <span id="selectedText">-- Chọn nhân sự --</span><span class="badge bg-success rounded-pill" id="selectedCount">0</span>
+                                    <span id="selectedText">-- Chọn nhân sự --</span>
+                                    <span class="badge bg-success rounded-pill" id="selectedCount">0</span>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-custom shadow" id="checkboxContainer"></div>
+                                <div class="dropdown-menu dropdown-menu-custom shadow" id="checkboxContainer">
+                                    </div>
                             </div>
                         </div>
                         <div class="row">
@@ -93,7 +98,21 @@
                     <div class="col-md-4"><input type="text" id="filterText" class="form-control form-control-sm" placeholder="Tìm..." onkeyup="renderTable()"></div>
                     <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="loadTaskList()">🔄 Tải</button></div>
                 </div>
-                <div class="table-responsive"><table class="table table-hover align-middle border"><tbody id="taskTableBody"></tbody></table></div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border">
+                        <thead class="table-success">
+                            <tr>
+                                <th width="25%">Công việc</th>
+                                <th width="20%">Tiến độ</th>
+                                <th width="15%">Người làm</th> <th width="10%">Ngày tạo</th>
+                                <th width="10%">Deadline</th>
+                                <th width="10%">Trạng thái</th>
+                                <th width="10%">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -136,7 +155,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydGLX2uVw8B_Hrzhk0Lm7AZQgIoHvUQ9it4K0542k_FMzmwDdhqqGbHy2fkmFmHnV2iA/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_9NKQHyVrnuNHs4hzRElnEpLILt6bubcMZkle6CUvo9NmV0VtXeulm_g7HzJnC7MqyQ/exec"; 
     let globalData = [];
     let currentPass = "";
 
@@ -145,8 +164,9 @@
         "💊 Nhân viên khoa": ["Chu Đài Trang", "Phạm Bá Thương", "Lê Thị Thanh Nhàn", "Nguyễn Duy Tiến", "Nguyễn Thị Hằng", "Kiều Mạnh Toàn", "Đỗ Thị Nhật Lệ", "Nguyễn Thị Thu Hà", "Hà Thị Thảo", "Nguyễn Tuấn Thành", "Vũ Thị Hồng Hạnh", "Hà Thu Trang", "Đoàn Thị Mai Hương", "Triệu Thị Vỵ"]
     };
 
-    initCheckboxes(); initSingleSelect('compliancePerson');
+    // --- KHỞI TẠO ---
     loadTaskList(); checkLoginState();
+    initCheckboxes(); initSingleSelect('compliancePerson');
 
     // --- LOGIN ---
     function showLoginModal() { new bootstrap.Modal(document.getElementById('loginModal')).show(); }
@@ -155,38 +175,96 @@
     function checkLoginState() { const s=sessionStorage.getItem('admin_pass'); if(s){ currentPass=s; applyLoginState(true); } else applyLoginState(false); }
     function applyLoginState(isLogged) { document.querySelectorAll('.admin-only').forEach(el=>el.style.setProperty("display",isLogged?"block":"none","important")); document.getElementById('btnLogin').classList.toggle('d-none',isLogged); document.getElementById('btnLogout').classList.toggle('d-none',!isLogged); }
 
-    // --- UI INIT ---
+    // --- UI INIT (ĐÃ SỬA LỖI COUNTER) ---
     function initCheckboxes() {
-        const c=document.getElementById('checkboxContainer'), h=document.getElementById('hiddenAssigneeSelect'), t=document.getElementById('selectedText'), n=document.getElementById('selectedCount');
-        c.innerHTML=""; let i=0;
+        const c=document.getElementById('checkboxContainer'), h=document.getElementById('hiddenAssigneeSelect');
+        const t=document.getElementById('selectedText'), n=document.getElementById('selectedCount');
+        c.innerHTML=""; 
+        
+        let globalIndex = 0; // Biến đếm toàn cục để đồng bộ index
+
         for(const[g,ppl] of Object.entries(STAFF_GROUPS)){
             c.innerHTML+=`<div class="group-header">${g}</div>`;
             ppl.forEach(name=>{
-                h.add(new Option(name,name));
+                // 1. Thêm Option vào Hidden Select
+                const opt = document.createElement('option');
+                opt.value = name; opt.text = name;
+                h.add(opt);
+
+                // 2. Tạo Checkbox hiển thị
                 const d=document.createElement('div'); d.className='form-check';
-                d.innerHTML=`<input class="form-check-input" type="checkbox" value="${name}" id="chk${i}"><label class="form-check-label" for="chk${i}">${name}</label>`;
+                d.innerHTML=`<input class="form-check-input" type="checkbox" value="${name}" id="chk${globalIndex}"><label class="form-check-label" for="chk${globalIndex}">${name}</label>`;
                 c.appendChild(d);
-                d.querySelector('input').addEventListener('change',(e)=>{h.options[i].selected=e.target.checked; updateDisplay(h,t,n);});
-                i++;
+                
+                // 3. Gắn sự kiện (Sử dụng Closure để bắt đúng index)
+                const currentIndex = globalIndex;
+                d.querySelector('input').addEventListener('change', (e) => {
+                    h.options[currentIndex].selected = e.target.checked; 
+                    updateDisplay(h, t, n);
+                });
+                
+                globalIndex++; // Tăng biến đếm
             });
         }
     }
+
     function initSingleSelect(elId) { const s=document.getElementById(elId); s.innerHTML='<option value="">-- Chọn --</option>'; for(const[g,ppl] of Object.entries(STAFF_GROUPS)){ const o=document.createElement('optgroup'); o.label=g; ppl.forEach(n=>o.innerHTML+=`<option value="${n}">${n}</option>`); s.appendChild(o); } }
-    function updateDisplay(s,t,c) { let cnt=0,nms=[]; Array.from(s.options).forEach(o=>{if(o.selected){cnt++;nms.push(o.value)}}); c.innerText=cnt; t.innerText=cnt===0?"-- Chọn nhân sự --":(cnt<=2?nms.join(", "):`Đã chọn ${cnt} người`); }
+    
+    function updateDisplay(sel, txt, cnt) { 
+        let count = 0, names = []; 
+        Array.from(sel.options).forEach(o => { 
+            if(o.selected) { count++; names.push(o.value); } 
+        }); 
+        cnt.innerText = count; 
+        txt.innerText = count === 0 ? "-- Chọn nhân sự --" : (count <= 2 ? names.join(", ") : `Đã chọn ${count} người`); 
+    }
+
+    // --- FORMS ---
+    document.getElementById('taskForm').addEventListener('submit', e => { 
+        e.preventDefault(); 
+        if(!currentPass){alert("⛔ Login!");return;} 
+        
+        const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.innerText="Đang lưu...";
+        
+        // Lấy dữ liệu từ Select Ẩn (Quan trọng)
+        const selectedValues = Array.from(document.getElementById('hiddenAssigneeSelect').selectedOptions).map(o=>o.value).join(', ');
+        
+        const d=Object.fromEntries(new FormData(e.target).entries()); 
+        d.assignee = selectedValues; // Gán danh sách người vào data gửi đi
+        d.password = currentPass; 
+
+        fetch(SCRIPT_URL+"?action=add",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{ 
+            alert(res.message); 
+            if(res.status==='success'){
+                e.target.reset(); 
+                // Reset checkbox
+                document.querySelectorAll('#checkboxContainer input').forEach(c=>c.checked=false); 
+                document.getElementById('hiddenAssigneeSelect').selectedIndex = -1; // Bỏ chọn hết trong select ẩn
+                updateDisplay(document.getElementById('hiddenAssigneeSelect'),document.getElementById('selectedText'),document.getElementById('selectedCount')); 
+                document.querySelector('[data-bs-target="#pills-list"]').click();
+            } 
+        }).finally(()=>{btn.disabled=false; btn.innerText="LƯU CÔNG VIỆC";}); 
+    });
+
+    document.getElementById('complianceForm').addEventListener('submit', e => { 
+        e.preventDefault(); if(!currentPass){alert("⛔ Login!");return;} 
+        const btn=document.getElementById('btnCompliance'); btn.disabled=true; 
+        const d=Object.fromEntries(new FormData(e.target).entries()); d.password=currentPass; 
+        fetch(SCRIPT_URL+"?action=add_compliance",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{ 
+            alert(res.message); if(res.status==='success'){e.target.reset(); loadCompliance();} 
+        }).finally(()=>{btn.disabled=false;}); 
+    });
 
     // --- DATA LOADING & PARSING ---
+    function parseProgress(val) { if(typeof val==='number')return Math.round(val*100); if(typeof val==='string')return parseInt(val.replace('%',''))||0; return 0; }
+
     function loadTaskList() {
         const tb=document.getElementById('taskTableBody'); tb.innerHTML='<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div></td></tr>';
         fetch(SCRIPT_URL).then(r=>r.json()).then(res=>{ globalData=res.data; populateFilter(); renderTable(); });
     }
-
-    // 🔥 HÀM PARSE TIẾN ĐỘ CHUẨN (SỬA LỖI HIỂN THỊ)
-    function parseProgress(val) {
-        if (typeof val === 'number') return Math.round(val * 100); // 0.5 -> 50
-        if (typeof val === 'string') return parseInt(val.replace('%', '')) || 0; // "50%" -> 50
-        return 0;
-    }
-
+    
+    function populateFilter() { const s=document.getElementById('filterAssignee'); let a=[]; globalData.forEach(r=>a.push(...String(r[7]).split(',').map(v=>v.trim()).filter(v=>v))); [...new Set(a)].sort().forEach(n=>s.innerHTML+=`<option value="${n}">${n}</option>`); }
+    
     function renderTable() {
         const tb=document.getElementById('taskTableBody'); tb.innerHTML="";
         const fN=document.getElementById('filterAssignee').value.toLowerCase().trim();
@@ -200,10 +278,7 @@
         
         flt.forEach(r=>{
             let id=r[0], name=r[1], status=String(r[2]).trim(), created=new Date(r[6]).toLocaleDateString('vi-VN'), assignee=r[7];
-            
-            // Dùng hàm parse chuẩn để lấy số %
             let prog = parseProgress(r[8]);
-
             let diff=r[10]||"", bdgDiff=diff?`<span class="badge bg-light text-dark border ms-1">${diff}</span>`:"";
             let rawDL=r[9]||r[4], dlDisp="";
             if(r[9]) dlDisp=`<span class="deadline-original">${new Date(r[4]).toLocaleDateString('vi-VN')}</span><span class="deadline-extended">${new Date(r[9]).toLocaleDateString('vi-VN')}</span>`;
@@ -221,39 +296,24 @@
     function updateProgress(id, v) { document.getElementById(`val-${id}`).innerText=v+'%'; fetch(SCRIPT_URL+"?action=update_progress",{method:'POST',body:JSON.stringify({id:id,progress:v})}).then(r=>r.json()).then(res=>{if(v==100)loadTaskList()}); }
     function markDone(id) { if(confirm('Xong chưa?')) fetch(SCRIPT_URL+"?action=update",{method:'POST',body:JSON.stringify({id:id})}).then(r=>r.json()).then(res=>{alert(res.message);loadTaskList()}); }
     function openEmail(t,p,d) { let dl=d?new Date(d).toLocaleDateString('vi-VN'):'Sớm nhất'; window.location.href=`mailto:?subject=${encodeURIComponent("⚠️ NHẮC: "+t)}&body=${encodeURIComponent("Chào "+p+",\n\nViệc: "+t+"\nHạn: "+dl+"\n\nVui lòng báo cáo.")}`; }
-    function populateFilter() { const s=document.getElementById('filterAssignee'); let a=[]; globalData.forEach(r=>a.push(...String(r[7]).split(',').map(v=>v.trim()).filter(v=>v))); [...new Set(a)].sort().forEach(n=>s.innerHTML+=`<option value="${n}">${n}</option>`); }
 
-    // --- COMPLIANCE ---
-    document.getElementById('complianceForm').addEventListener('submit', e => {
-        e.preventDefault(); if(!currentPass){alert("⛔ Login!");return;}
-        const btn=document.getElementById('btnCompliance'); btn.disabled=true; 
-        const d=Object.fromEntries(new FormData(e.target).entries()); d.password=currentPass;
-        fetch(SCRIPT_URL+"?action=add_compliance",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{
-            alert(res.message); if(res.status==='success'){e.target.reset(); loadCompliance();}
-        }).finally(()=>{btn.disabled=false;});
-    });
-
+    // --- OTHER LOADERS ---
     function loadCompliance() {
         const tb=document.getElementById('complianceBody'); tb.innerHTML='<tr><td colspan="5" class="text-center">Loading...</td></tr>';
         fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json()).then(res=>{
             tb.innerHTML=""; if(!res.data||!res.data.length){tb.innerHTML='<tr><td colspan="5" class="text-center text-muted">Trống</td></tr>';return;}
             res.data.reverse().forEach(r=>{
-                // Backend mới: [ID, Date, Person, Type, Fault, Note] -> Indices: 0,1,2,3,4,5
-                // Nếu dữ liệu cũ (5 cột): [ID, Date, Person, Fault, Note] -> Type thiếu
                 let hasType = r.length >= 6;
                 let type = hasType ? r[3] : (r[3].includes("Khen") ? "Khen thưởng" : "Vi phạm");
                 let content = hasType ? r[4] : r[3];
                 let note = hasType ? r[5] : r[4];
-                
                 let badge = type.includes("Khen") ? '<span class="badge bg-warning text-dark">🏆 Khen</span>' : '<span class="badge bg-danger">⚠️ Vi phạm</span>';
                 tb.innerHTML+=`<tr><td>${new Date(r[1]).toLocaleDateString('vi-VN')}</td><td class="fw-bold">${r[2]}</td><td>${badge}</td><td>${content}</td><td>${note||''}</td></tr>`;
             });
         });
     }
 
-    // --- DASHBOARD ---
     google.charts.load('current',{'packages':['corechart','bar']});
-    
     function loadDashboard() { 
         if(SCRIPT_URL.includes("DÁN_LINK")) return;
         Promise.all([fetch(SCRIPT_URL).then(r=>r.json()), fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json())]).then(([taskRes, compRes]) => {
@@ -263,35 +323,20 @@
     }
 
     function drawCombinedCharts(tasks, compliance) {
-        // Chart 1 & 2: Task
         var s={'Todo':0,'Doing':0,'Done':0}, pTask={};
         tasks.forEach(r=>{ s[String(r[2]).trim()]++; String(r[7]).split(',').forEach(n=>{ n=n.trim(); if(n){ if(!pTask[n])pTask[n]=0; pTask[n]++; } }); });
         new google.visualization.PieChart(document.getElementById('piechart_task')).draw(google.visualization.arrayToDataTable([['S','C'],['Todo',s.Todo],['Doing',s.Doing],['Done',s.Done]]),{colors:['#dc3545','#ffc107','#198754'],is3D:true,legend:'bottom',chartArea:{width:'90%',height:'80%'}});
         var arrTask=[['NV','Việc',{role:'style'}]]; Object.keys(pTask).sort().forEach(k=>arrTask.push([k,pTask[k],'#0d6efd']));
         new google.visualization.ColumnChart(document.getElementById('barchart_task')).draw(google.visualization.arrayToDataTable(arrTask),{legend:'none',chartArea:{width:'85%',height:'70%'}});
 
-        // Chart 3: Compliance (CHỈ ĐẾM VI PHẠM, BỎ KHEN)
         var pComp = {};
         compliance.forEach(r => {
-            let name = r[2]; 
-            let hasType = r.length >= 6;
-            let type = hasType ? r[3] : (r[3].includes("Khen") ? "Khen thưởng" : "Vi phạm");
-            
-            if (!pComp[name]) pComp[name] = 0;
-            // 🔥 Chỉ cộng nếu là Vi phạm
-            if (!type.includes("Khen")) pComp[name]++;
+            let name = r[2]; let hasType = r.length >= 6; let type = hasType ? r[3] : (r[3].includes("Khen") ? "Khen thưởng" : "Vi phạm");
+            if (!pComp[name]) pComp[name] = 0; if (!type.includes("Khen")) pComp[name]++;
         });
-        
         var arrComp = [['NV', 'Vi phạm', { role: "style" } ]];
-        Object.keys(pComp).sort().forEach(k => {
-            if(pComp[k] > 0) arrComp.push([k, pComp[k], '#dc3545']); // Màu đỏ
-        });
-        
-        if(arrComp.length > 1) {
-            new google.visualization.ColumnChart(document.getElementById('columnchart_compliance')).draw(google.visualization.arrayToDataTable(arrComp), { legend:'none', chartArea:{width:'85%',height:'70%'} });
-        } else {
-            document.getElementById('columnchart_compliance').innerHTML = "<div class='text-center text-muted mt-5'>Chưa có vi phạm nào!</div>";
-        }
+        Object.keys(pComp).sort().forEach(k => { if(pComp[k] > 0) arrComp.push([k, pComp[k], '#dc3545']); });
+        if(arrComp.length > 1) { new google.visualization.ColumnChart(document.getElementById('columnchart_compliance')).draw(google.visualization.arrayToDataTable(arrComp), { legend:'none', chartArea:{width:'85%',height:'70%'} }); } else { document.getElementById('columnchart_compliance').innerHTML = "<div class='text-center text-muted mt-5'>Chưa có vi phạm nào!</div>"; }
     }
 
     function renderCombinedCalendar(tasks, compliance) {
@@ -302,18 +347,13 @@
         });
         compliance.forEach(r => {
             if(!r[1]) return;
-            let hasType = r.length >= 6;
-            let type = hasType ? r[3] : (r[3].includes("Khen") ? "Khen thưởng" : "Vi phạm");
-            let isBonus = type.includes("Khen");
-            let content = hasType ? r[4] : r[3];
-            
+            let hasType = r.length >= 6; let type = hasType ? r[3] : (r[3].includes("Khen") ? "Khen thưởng" : "Vi phạm");
+            let isBonus = type.includes("Khen"); let content = hasType ? r[4] : r[3];
             events.push({ title: isBonus ? `🏆 ${r[2]}` : `⚠️ ${r[2]}`, start: new Date(r[1]).toISOString().split('T')[0], color: isBonus ? '#fd7e14' : '#212529', textColor: 'white', description: content });
         });
         var cal = new FullCalendar.Calendar(document.getElementById('calendar'), { initialView:'dayGridMonth', locale:'vi', height:'85vh', headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' }, events: events, eventClick: function(i){ alert('📌 ' + i.event.title + '\nℹ️ ' + (i.event.extendedProps.description || 'Deadline')); } });
         cal.render(); setTimeout(()=>cal.updateSize(),200);
     }
-    
-    document.getElementById('taskForm').addEventListener('submit', e => { e.preventDefault(); if(!currentPass){alert("⛔ Login!");return;} const btn=document.getElementById('submitBtn'); btn.disabled=true; const d=Object.fromEntries(new FormData(e.target).entries()); d.assignee=Array.from(document.getElementById('hiddenAssigneeSelect').selectedOptions).map(o=>o.value).join(', '); d.password=currentPass; fetch(SCRIPT_URL+"?action=add",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{ alert(res.message); if(res.status==='success'){e.target.reset(); document.querySelectorAll('#checkboxContainer input').forEach(c=>c.checked=false); updateDisplay(document.getElementById('hiddenAssigneeSelect'),document.getElementById('selectedText'),document.getElementById('selectedCount')); document.querySelector('[data-bs-target="#pills-list"]').click();} }).finally(()=>{btn.disabled=false;}); });
 </script>
 </body>
 </html>
