@@ -27,7 +27,6 @@
         .btn-email { background-color: #fff3cd; color: #856404; } .btn-email:hover { background-color: #ffeeba; }
         .btn-done { background-color: #d1e7dd; color: #0f5132; } .btn-done:hover { background-color: #badbcc; }
 
-        /* Dropdown & Checkbox */
         .dropdown-menu-custom { max-height: 300px; overflow-y: auto; width: 100%; padding: 0; }
         .group-header { background-color: #f8f9fa; padding: 8px 15px; font-weight: bold; color: var(--primary-color); font-size: 0.9rem; }
         .form-check { padding: 8px 15px 8px 40px; margin: 0; cursor: pointer; border-bottom: 1px solid #f8f9fa; }
@@ -67,14 +66,11 @@
                         <div class="mb-3">
                             <label class="fw-bold">Người thực hiện</label>
                             <select name="assignee" id="hiddenAssigneeSelect" multiple></select>
-                            
                             <div class="dropdown">
                                 <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                                    <span id="selectedText">-- Chọn nhân sự --</span>
-                                    <span class="badge bg-success rounded-pill" id="selectedCount">0</span>
+                                    <span id="selectedText">-- Chọn nhân sự --</span><span class="badge bg-success rounded-pill" id="selectedCount">0</span>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-custom shadow" id="checkboxContainer">
-                                    </div>
+                                <div class="dropdown-menu dropdown-menu-custom shadow" id="checkboxContainer"></div>
                             </div>
                         </div>
                         <div class="row">
@@ -103,8 +99,9 @@
                         <thead class="table-success">
                             <tr>
                                 <th width="25%">Công việc</th>
-                                <th width="20%">Tiến độ</th>
-                                <th width="15%">Người làm</th> <th width="10%">Ngày tạo</th>
+                                <th width="20%">Tiến độ (Kéo thả)</th>
+                                <th width="15%">Người làm</th>
+                                <th width="10%">Ngày tạo</th>
                                 <th width="10%">Deadline</th>
                                 <th width="10%">Trạng thái</th>
                                 <th width="10%">Hành động</th>
@@ -155,7 +152,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_9NKQHyVrnuNHs4hzRElnEpLILt6bubcMZkle6CUvo9NmV0VtXeulm_g7HzJnC7MqyQ/exec"; 
+    // 🔥 THAY LINK CỦA BẠN VÀO ĐÂY
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyyfACeHRQ_JsuJOUrijB_9ZUf13yKHcvGQ_r1q_yCg2MpAWUzC3NgeSQ_fEwWJ_HQucQ/exec"; 
+    
     let globalData = [];
     let currentPass = "";
 
@@ -175,94 +174,41 @@
     function checkLoginState() { const s=sessionStorage.getItem('admin_pass'); if(s){ currentPass=s; applyLoginState(true); } else applyLoginState(false); }
     function applyLoginState(isLogged) { document.querySelectorAll('.admin-only').forEach(el=>el.style.setProperty("display",isLogged?"block":"none","important")); document.getElementById('btnLogin').classList.toggle('d-none',isLogged); document.getElementById('btnLogout').classList.toggle('d-none',!isLogged); }
 
-    // --- UI INIT (ĐÃ SỬA LỖI COUNTER) ---
+    // --- UI INIT ---
     function initCheckboxes() {
-        const c=document.getElementById('checkboxContainer'), h=document.getElementById('hiddenAssigneeSelect');
-        const t=document.getElementById('selectedText'), n=document.getElementById('selectedCount');
-        c.innerHTML=""; 
-        
-        let globalIndex = 0; // Biến đếm toàn cục để đồng bộ index
-
+        const c=document.getElementById('checkboxContainer'), h=document.getElementById('hiddenAssigneeSelect'), t=document.getElementById('selectedText'), n=document.getElementById('selectedCount');
+        c.innerHTML=""; let globalIndex = 0;
         for(const[g,ppl] of Object.entries(STAFF_GROUPS)){
             c.innerHTML+=`<div class="group-header">${g}</div>`;
             ppl.forEach(name=>{
-                // 1. Thêm Option vào Hidden Select
-                const opt = document.createElement('option');
-                opt.value = name; opt.text = name;
-                h.add(opt);
-
-                // 2. Tạo Checkbox hiển thị
+                h.add(new Option(name,name));
                 const d=document.createElement('div'); d.className='form-check';
                 d.innerHTML=`<input class="form-check-input" type="checkbox" value="${name}" id="chk${globalIndex}"><label class="form-check-label" for="chk${globalIndex}">${name}</label>`;
                 c.appendChild(d);
-                
-                // 3. Gắn sự kiện (Sử dụng Closure để bắt đúng index)
                 const currentIndex = globalIndex;
-                d.querySelector('input').addEventListener('change', (e) => {
-                    h.options[currentIndex].selected = e.target.checked; 
-                    updateDisplay(h, t, n);
-                });
-                
-                globalIndex++; // Tăng biến đếm
+                d.querySelector('input').addEventListener('change',(e)=>{h.options[currentIndex].selected=e.target.checked; updateDisplay(h,t,n);});
+                globalIndex++;
             });
         }
     }
-
     function initSingleSelect(elId) { const s=document.getElementById(elId); s.innerHTML='<option value="">-- Chọn --</option>'; for(const[g,ppl] of Object.entries(STAFF_GROUPS)){ const o=document.createElement('optgroup'); o.label=g; ppl.forEach(n=>o.innerHTML+=`<option value="${n}">${n}</option>`); s.appendChild(o); } }
-    
-    function updateDisplay(sel, txt, cnt) { 
-        let count = 0, names = []; 
-        Array.from(sel.options).forEach(o => { 
-            if(o.selected) { count++; names.push(o.value); } 
-        }); 
-        cnt.innerText = count; 
-        txt.innerText = count === 0 ? "-- Chọn nhân sự --" : (count <= 2 ? names.join(", ") : `Đã chọn ${count} người`); 
+    function updateDisplay(s,t,c) { let cnt=0,nms=[]; Array.from(s.options).forEach(o=>{if(o.selected){cnt++;nms.push(o.value)}}); c.innerText=cnt; t.innerText=cnt===0?"-- Chọn nhân sự --":(cnt<=2?nms.join(", "):`Đã chọn ${cnt} người`); }
+
+    // 🔥 HÀM PARSE PROGRESS MỚI (FIX LỖI HIỂN THỊ)
+    function parseProgress(val) {
+        if (!val) return 0;
+        let strVal = String(val).replace(/^'/, '').replace('%', '').trim();
+        let num = parseFloat(strVal);
+        if (isNaN(num)) return 0;
+        if (num <= 1 && num > 0 && String(val).includes('.')) return Math.round(num * 100); // 0.5 -> 50
+        return Math.round(num); // 50 -> 50
     }
 
-    // --- FORMS ---
-    document.getElementById('taskForm').addEventListener('submit', e => { 
-        e.preventDefault(); 
-        if(!currentPass){alert("⛔ Login!");return;} 
-        
-        const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.innerText="Đang lưu...";
-        
-        // Lấy dữ liệu từ Select Ẩn (Quan trọng)
-        const selectedValues = Array.from(document.getElementById('hiddenAssigneeSelect').selectedOptions).map(o=>o.value).join(', ');
-        
-        const d=Object.fromEntries(new FormData(e.target).entries()); 
-        d.assignee = selectedValues; // Gán danh sách người vào data gửi đi
-        d.password = currentPass; 
-
-        fetch(SCRIPT_URL+"?action=add",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{ 
-            alert(res.message); 
-            if(res.status==='success'){
-                e.target.reset(); 
-                // Reset checkbox
-                document.querySelectorAll('#checkboxContainer input').forEach(c=>c.checked=false); 
-                document.getElementById('hiddenAssigneeSelect').selectedIndex = -1; // Bỏ chọn hết trong select ẩn
-                updateDisplay(document.getElementById('hiddenAssigneeSelect'),document.getElementById('selectedText'),document.getElementById('selectedCount')); 
-                document.querySelector('[data-bs-target="#pills-list"]').click();
-            } 
-        }).finally(()=>{btn.disabled=false; btn.innerText="LƯU CÔNG VIỆC";}); 
-    });
-
-    document.getElementById('complianceForm').addEventListener('submit', e => { 
-        e.preventDefault(); if(!currentPass){alert("⛔ Login!");return;} 
-        const btn=document.getElementById('btnCompliance'); btn.disabled=true; 
-        const d=Object.fromEntries(new FormData(e.target).entries()); d.password=currentPass; 
-        fetch(SCRIPT_URL+"?action=add_compliance",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{ 
-            alert(res.message); if(res.status==='success'){e.target.reset(); loadCompliance();} 
-        }).finally(()=>{btn.disabled=false;}); 
-    });
-
-    // --- DATA LOADING & PARSING ---
-    function parseProgress(val) { if(typeof val==='number')return Math.round(val*100); if(typeof val==='string')return parseInt(val.replace('%',''))||0; return 0; }
-
+    // --- DATA LOADING ---
     function loadTaskList() {
         const tb=document.getElementById('taskTableBody'); tb.innerHTML='<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div></td></tr>';
         fetch(SCRIPT_URL).then(r=>r.json()).then(res=>{ globalData=res.data; populateFilter(); renderTable(); });
     }
-    
     function populateFilter() { const s=document.getElementById('filterAssignee'); let a=[]; globalData.forEach(r=>a.push(...String(r[7]).split(',').map(v=>v.trim()).filter(v=>v))); [...new Set(a)].sort().forEach(n=>s.innerHTML+=`<option value="${n}">${n}</option>`); }
     
     function renderTable() {
@@ -278,7 +224,9 @@
         
         flt.forEach(r=>{
             let id=r[0], name=r[1], status=String(r[2]).trim(), created=new Date(r[6]).toLocaleDateString('vi-VN'), assignee=r[7];
-            let prog = parseProgress(r[8]);
+            
+            let prog = parseProgress(r[8]); // Sử dụng hàm parse mới
+
             let diff=r[10]||"", bdgDiff=diff?`<span class="badge bg-light text-dark border ms-1">${diff}</span>`:"";
             let rawDL=r[9]||r[4], dlDisp="";
             if(r[9]) dlDisp=`<span class="deadline-original">${new Date(r[4]).toLocaleDateString('vi-VN')}</span><span class="deadline-extended">${new Date(r[9]).toLocaleDateString('vi-VN')}</span>`;
@@ -287,72 +235,73 @@
             let slider=status==='Done'?`<div class="progress" style="height:20px"><div class="progress-bar bg-success" style="width:100%">100%</div></div>`:
                 `<div class="d-flex align-items-center"><input type="range" class="range-slider me-2" min="0" max="100" step="10" value="${prog}" onchange="updateProgress('${id}',this.value)"><span class="badge bg-secondary" id="val-${id}" style="min-width:35px">${prog}%</span></div>`;
             let cls=status==='Done'?'bg-done':(status==='Doing'?'bg-doing':'bg-todo');
-            let btns=status!=='Done'?`<button class="btn btn-sm btn-outline-success mb-1 w-100" onclick="markDone('${id}')">✅ Xong</button><button class="btn btn-action btn-email" onclick="openEmail('${name}','${assignee}','${r[9]||r[4]}')">📧 Email</button>`:'';
+            
+            // 🔥 NÚT GỬI MAIL GỌI BACKEND
+            let btns=status!=='Done'?`<button class="btn btn-sm btn-outline-success mb-1 w-100" onclick="markDone('${id}')">✅ Xong</button><button class="btn btn-action btn-email" onclick="sendEmailBackend('${id}','${name}','${assignee}','${r[9]||r[4]}')">📧 Email</button>`:'';
             
             tb.innerHTML+=`<tr><td><span class="fw-bold text-primary">${name}</span>${bdgDiff}<br><small class="text-muted">${r[5]||''}</small></td><td>${slider}</td><td><small class="fw-bold">${assignee}</small></td><td>${created}</td><td>${dlDisp}</td><td><span class="badge badge-status ${cls}">${status}</span></td><td>${btns}</td></tr>`;
         });
     }
 
-    function updateProgress(id, v) { document.getElementById(`val-${id}`).innerText=v+'%'; fetch(SCRIPT_URL+"?action=update_progress",{method:'POST',body:JSON.stringify({id:id,progress:v})}).then(r=>r.json()).then(res=>{if(v==100)loadTaskList()}); }
+    // --- ACTIONS ---
+    function updateProgress(id, v) { 
+        document.getElementById(`val-${id}`).innerText=v+'%'; 
+        // Gửi tiến độ lên server
+        fetch(SCRIPT_URL+"?action=update_progress",{method:'POST',body:JSON.stringify({id:id,progress:v})})
+        .then(r=>r.json()).then(res=>{ console.log("Saved"); if(v==100)loadTaskList()}); 
+    }
+    
     function markDone(id) { if(confirm('Xong chưa?')) fetch(SCRIPT_URL+"?action=update",{method:'POST',body:JSON.stringify({id:id})}).then(r=>r.json()).then(res=>{alert(res.message);loadTaskList()}); }
-    function openEmail(t,p,d) { let dl=d?new Date(d).toLocaleDateString('vi-VN'):'Sớm nhất'; window.location.href=`mailto:?subject=${encodeURIComponent("⚠️ NHẮC: "+t)}&body=${encodeURIComponent("Chào "+p+",\n\nViệc: "+t+"\nHạn: "+dl+"\n\nVui lòng báo cáo.")}`; }
+    
+    // 🔥 GỬI MAIL SERVER-SIDE
+    function sendEmailBackend(id, t, p, d) {
+        if(!confirm(`Gửi email nhắc nhở cho: ${p}?`)) return;
+        let dlStr = d ? new Date(d).toLocaleDateString('vi-VN') : 'Sớm nhất';
+        
+        const btn = event.target; const oldTxt = btn.innerText;
+        btn.innerText = "⏳..."; btn.disabled = true;
 
-    // --- OTHER LOADERS ---
+        fetch(SCRIPT_URL + "?action=send_email_manual", {
+            method: 'POST',
+            body: JSON.stringify({ taskName: t, assignee: p, deadline: dlStr })
+        })
+        .then(r => r.json())
+        .then(res => { alert(res.message); })
+        .catch(err => alert("Lỗi kết nối!"))
+        .finally(() => { btn.innerText = oldTxt; btn.disabled = false; });
+    }
+
+    // --- FORMS ---
+    document.getElementById('taskForm').addEventListener('submit', e => { e.preventDefault(); if(!currentPass){alert("⛔ Login!");return;} const btn=document.getElementById('submitBtn'); btn.disabled=true; const d=Object.fromEntries(new FormData(e.target).entries()); d.assignee=Array.from(document.getElementById('hiddenAssigneeSelect').selectedOptions).map(o=>o.value).join(', '); d.password=currentPass; fetch(SCRIPT_URL+"?action=add",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{ alert(res.message); if(res.status==='success'){e.target.reset(); document.querySelectorAll('#checkboxContainer input').forEach(c=>c.checked=false); updateDisplay(document.getElementById('hiddenAssigneeSelect'),document.getElementById('selectedText'),document.getElementById('selectedCount')); document.querySelector('[data-bs-target="#pills-list"]').click();} }).finally(()=>{btn.disabled=false;}); });
+    document.getElementById('complianceForm').addEventListener('submit', e => { e.preventDefault(); if(!currentPass){alert("⛔ Login!");return;} const btn=document.getElementById('btnCompliance'); btn.disabled=true; const d=Object.fromEntries(new FormData(e.target).entries()); d.password=currentPass; fetch(SCRIPT_URL+"?action=add_compliance",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{ alert(res.message); if(res.status==='success'){e.target.reset(); loadCompliance();} }).finally(()=>{btn.disabled=false;}); });
+
     function loadCompliance() {
         const tb=document.getElementById('complianceBody'); tb.innerHTML='<tr><td colspan="5" class="text-center">Loading...</td></tr>';
         fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json()).then(res=>{
             tb.innerHTML=""; if(!res.data||!res.data.length){tb.innerHTML='<tr><td colspan="5" class="text-center text-muted">Trống</td></tr>';return;}
             res.data.reverse().forEach(r=>{
-                let hasType = r.length >= 6;
-                let type = hasType ? r[3] : (r[3].includes("Khen") ? "Khen thưởng" : "Vi phạm");
-                let content = hasType ? r[4] : r[3];
-                let note = hasType ? r[5] : r[4];
-                let badge = type.includes("Khen") ? '<span class="badge bg-warning text-dark">🏆 Khen</span>' : '<span class="badge bg-danger">⚠️ Vi phạm</span>';
+                let hasType=r.length>=6, type=hasType?r[3]:(r[3].includes("Khen")?"Khen thưởng":"Vi phạm"), content=hasType?r[4]:r[3], note=hasType?r[5]:r[4];
+                let badge=type.includes("Khen")?'<span class="badge bg-warning text-dark">🏆 Khen</span>':'<span class="badge bg-danger">⚠️ Vi phạm</span>';
                 tb.innerHTML+=`<tr><td>${new Date(r[1]).toLocaleDateString('vi-VN')}</td><td class="fw-bold">${r[2]}</td><td>${badge}</td><td>${content}</td><td>${note||''}</td></tr>`;
             });
         });
     }
 
     google.charts.load('current',{'packages':['corechart','bar']});
-    function loadDashboard() { 
-        if(SCRIPT_URL.includes("DÁN_LINK")) return;
-        Promise.all([fetch(SCRIPT_URL).then(r=>r.json()), fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json())]).then(([taskRes, compRes]) => {
-            const tasks = taskRes.data || []; const compliance = compRes.data || [];
-            drawCombinedCharts(tasks, compliance); renderCombinedCalendar(tasks, compliance);
-        });
-    }
-
+    function loadDashboard() { if(SCRIPT_URL.includes("DÁN_LINK")) return; Promise.all([fetch(SCRIPT_URL).then(r=>r.json()), fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json())]).then(([taskRes, compRes]) => { const tasks = taskRes.data || []; const compliance = compRes.data || []; drawCombinedCharts(tasks, compliance); renderCombinedCalendar(tasks, compliance); }); }
     function drawCombinedCharts(tasks, compliance) {
-        var s={'Todo':0,'Doing':0,'Done':0}, pTask={};
-        tasks.forEach(r=>{ s[String(r[2]).trim()]++; String(r[7]).split(',').forEach(n=>{ n=n.trim(); if(n){ if(!pTask[n])pTask[n]=0; pTask[n]++; } }); });
+        var s={'Todo':0,'Doing':0,'Done':0}, pTask={}; tasks.forEach(r=>{ s[String(r[2]).trim()]++; String(r[7]).split(',').forEach(n=>{ n=n.trim(); if(n){ if(!pTask[n])pTask[n]=0; pTask[n]++; } }); });
         new google.visualization.PieChart(document.getElementById('piechart_task')).draw(google.visualization.arrayToDataTable([['S','C'],['Todo',s.Todo],['Doing',s.Doing],['Done',s.Done]]),{colors:['#dc3545','#ffc107','#198754'],is3D:true,legend:'bottom',chartArea:{width:'90%',height:'80%'}});
         var arrTask=[['NV','Việc',{role:'style'}]]; Object.keys(pTask).sort().forEach(k=>arrTask.push([k,pTask[k],'#0d6efd']));
         new google.visualization.ColumnChart(document.getElementById('barchart_task')).draw(google.visualization.arrayToDataTable(arrTask),{legend:'none',chartArea:{width:'85%',height:'70%'}});
-
-        var pComp = {};
-        compliance.forEach(r => {
-            let name = r[2]; let hasType = r.length >= 6; let type = hasType ? r[3] : (r[3].includes("Khen") ? "Khen thưởng" : "Vi phạm");
-            if (!pComp[name]) pComp[name] = 0; if (!type.includes("Khen")) pComp[name]++;
-        });
-        var arrComp = [['NV', 'Vi phạm', { role: "style" } ]];
-        Object.keys(pComp).sort().forEach(k => { if(pComp[k] > 0) arrComp.push([k, pComp[k], '#dc3545']); });
-        if(arrComp.length > 1) { new google.visualization.ColumnChart(document.getElementById('columnchart_compliance')).draw(google.visualization.arrayToDataTable(arrComp), { legend:'none', chartArea:{width:'85%',height:'70%'} }); } else { document.getElementById('columnchart_compliance').innerHTML = "<div class='text-center text-muted mt-5'>Chưa có vi phạm nào!</div>"; }
+        var pComp={}; compliance.forEach(r=>{ let name=r[2], hasType=r.length>=6, type=hasType?r[3]:(r[3].includes("Khen")?"Khen":"Vi phạm"); if(!pComp[name])pComp[name]=0; if(!type.includes("Khen"))pComp[name]++; });
+        var arrComp=[['NV','Vi phạm',{role:"style"}]]; Object.keys(pComp).sort().forEach(k=>{ if(pComp[k]>0)arrComp.push([k,pComp[k],'#dc3545']); });
+        if(arrComp.length>1) new google.visualization.ColumnChart(document.getElementById('columnchart_compliance')).draw(google.visualization.arrayToDataTable(arrComp),{legend:'none',chartArea:{width:'85%',height:'70%'}}); else document.getElementById('columnchart_compliance').innerHTML="<div class='text-center text-muted mt-5'>Chưa có vi phạm!</div>";
     }
-
     function renderCombinedCalendar(tasks, compliance) {
-        var events = [];
-        tasks.forEach(r => {
-            let date = r[9] || r[4]; if (!date) return;
-            events.push({ title: `${r[1]} (${r[7]})`, start: new Date(date).toISOString().split('T')[0], color: r[2]==='Done'?'#198754':(r[2]==='Todo'?'#dc3545':'#ffc107'), textColor: r[2]==='Doing'?'black':'white' });
-        });
-        compliance.forEach(r => {
-            if(!r[1]) return;
-            let hasType = r.length >= 6; let type = hasType ? r[3] : (r[3].includes("Khen") ? "Khen thưởng" : "Vi phạm");
-            let isBonus = type.includes("Khen"); let content = hasType ? r[4] : r[3];
-            events.push({ title: isBonus ? `🏆 ${r[2]}` : `⚠️ ${r[2]}`, start: new Date(r[1]).toISOString().split('T')[0], color: isBonus ? '#fd7e14' : '#212529', textColor: 'white', description: content });
-        });
-        var cal = new FullCalendar.Calendar(document.getElementById('calendar'), { initialView:'dayGridMonth', locale:'vi', height:'85vh', headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' }, events: events, eventClick: function(i){ alert('📌 ' + i.event.title + '\nℹ️ ' + (i.event.extendedProps.description || 'Deadline')); } });
-        cal.render(); setTimeout(()=>cal.updateSize(),200);
+        var events=[]; tasks.forEach(r=>{ let d=r[9]||r[4]; if(!d)return; events.push({title:`${r[1]} (${r[7]})`,start:new Date(d).toISOString().split('T')[0],color:r[2]==='Done'?'#198754':(r[2]==='Todo'?'#dc3545':'#ffc107'),textColor:r[2]==='Doing'?'black':'white'}); });
+        compliance.forEach(r=>{ if(!r[1])return; let hasType=r.length>=6, type=hasType?r[3]:(r[3].includes("Khen")?"Khen":"Vi phạm"), isBonus=type.includes("Khen"), content=hasType?r[4]:r[3]; events.push({title:isBonus?`🏆 ${r[2]}`:`⚠️ ${r[2]}`,start:new Date(r[1]).toISOString().split('T')[0],color:isBonus?'#fd7e14':'#212529',textColor:'white',description:content}); });
+        var cal=new FullCalendar.Calendar(document.getElementById('calendar'),{initialView:'dayGridMonth',locale:'vi',height:'85vh',headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},events:events,eventClick:function(i){alert('📌 '+i.event.title+'\nℹ️ '+(i.event.extendedProps.description||'Deadline'));}}); cal.render(); setTimeout(()=>cal.updateSize(),200);
     }
 </script>
 </body>
