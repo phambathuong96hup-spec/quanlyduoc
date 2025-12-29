@@ -11,127 +11,111 @@
     
     <style>
         :root { --primary-color: #0f9d58; --bg-color: #f0f2f5; }
-        body { background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; font-size: 15px; }
+        body { background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; font-size: 14px; }
         
-        /* Tabs & Card */
         .nav-pills .nav-link.active { background-color: var(--primary-color); color: white; box-shadow: 0 4px 6px rgba(15, 157, 88, 0.3); }
-        .nav-pills .nav-link { color: #555; font-weight: 600; padding: 10px 20px; }
+        .nav-pills .nav-link { color: #555; font-weight: 600; font-size: 0.95rem; cursor: pointer;}
         .card-custom { border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-radius: 12px; background: white; }
-        
-        /* Lịch */
         #calendar-container { padding: 20px; background: white; border-radius: 12px; }
-        .fc-toolbar-title { font-size: 1.8rem !important; color: #2c3e50; font-weight: 800; }
-        .fc-day-today { background-color: #e6fffa !important; }
-        .fc-event { cursor: pointer; border: none; padding: 2px 4px; font-size: 0.9em; }
-
-        /* Badge & Slider */
-        .badge-status { font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; }
-        .bg-todo { background-color: #dc3545; color: white; } 
-        .bg-doing { background-color: #ffc107; color: #333; } 
-        .bg-done { background-color: #198754; color: white; } 
-        .range-slider { width: 100%; cursor: pointer; height: 8px; accent-color: var(--primary-color); }
-        .btn-zalo { background-color: #0068ff; color: white; border: none; font-weight: 500; font-size: 0.85rem; padding: 4px 10px; border-radius: 4px; }
+        .fc-toolbar-title { font-size: 1.5rem !important; color: #2c3e50; font-weight: 800; }
         
-        /* CSS CHO DROPDOWN CHECKBOX */
-        .dropdown-menu-custom { max-height: 350px; overflow-y: auto; width: 100%; padding: 0; }
-        .group-header { background-color: #f8f9fa; padding: 8px 15px; font-weight: bold; color: var(--primary-color); border-bottom: 1px solid #eee; border-top: 1px solid #eee; font-size: 0.9rem; }
+        .badge-status { font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; }
+        .bg-todo { background-color: #dc3545; color: white; } .bg-doing { background-color: #ffc107; color: #333; } .bg-done { background-color: #198754; color: white; }
+        .range-slider { width: 100%; cursor: pointer; height: 8px; accent-color: var(--primary-color); }
+        .btn-action { font-size: 0.8rem; font-weight: 500; padding: 4px 8px; width: 100%; text-align: left; margin-bottom: 4px; border-radius: 4px; border: none; transition: 0.2s; }
+        .btn-email { background-color: #fff3cd; color: #856404; } .btn-email:hover { background-color: #ffeeba; }
+        .btn-done { background-color: #d1e7dd; color: #0f5132; } .btn-done:hover { background-color: #badbcc; }
+
+        /* Dropdown & Checkbox */
+        .dropdown-menu-custom { max-height: 300px; overflow-y: auto; width: 100%; padding: 0; }
+        .group-header { background-color: #f8f9fa; padding: 8px 15px; font-weight: bold; color: var(--primary-color); font-size: 0.9rem; }
         .form-check { padding: 8px 15px 8px 40px; margin: 0; cursor: pointer; border-bottom: 1px solid #f8f9fa; }
         .form-check:hover { background-color: #f1f3f5; }
         .form-check-input { cursor: pointer; transform: scale(1.2); margin-left: -25px; }
         #hiddenAssigneeSelect { display: none; }
-        
-        /* CSS hiển thị ngày gia hạn */
         .deadline-extended { color: #dc3545; font-weight: bold; }
         .deadline-original { text-decoration: line-through; color: #999; font-size: 0.85em; display: block; }
+
+        /* 🔥 LỚP ẨN CHO TAB ADMIN */
+        .admin-only { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container-fluid px-4 py-4">
-    <div class="d-flex justify-content-center align-items-center mb-4">
-        <h2 class="text-success fw-bold m-0">🏥 QUẢN LÝ CÔNG VIỆC KHOA DƯỢC</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-success fw-bold m-0">🏥 QUẢN LÝ KHOA DƯỢC</h3>
+        <button class="btn btn-outline-dark btn-sm" id="btnLogin" onclick="showLoginModal()">🔑 Đăng nhập Admin</button>
+        <button class="btn btn-outline-danger btn-sm d-none" id="btnLogout" onclick="logout()">🚪 Đăng xuất</button>
     </div>
 
-    <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded shadow-sm" id="pills-tab" role="tablist" style="max-width: 900px; margin: 0 auto;">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-input">📝 Giao Việc</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-list" onclick="loadTaskList()">📋 Danh Sách</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-report" onclick="loadDashboard()">📊 Báo Cáo & Lịch</button></li>
+    <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded shadow-sm" id="pills-tab" role="tablist">
+        <li class="nav-item admin-only"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-input">📝 Giao Việc</button></li>
+        <li class="nav-item admin-only"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-compliance">⚖️ Nội Quy</button></li>
+        
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-list" onclick="loadTaskList()">📋 Danh Sách</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-report" onclick="loadDashboard()">📊 Báo Cáo</button></li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane fade show active" id="pills-input">
-            <div class="container" style="max-width: 800px;">
+        <div class="tab-pane fade" id="pills-input">
+            <div class="container" style="max-width: 900px;">
                 <div class="card card-custom p-4">
                     <form id="taskForm">
-                        <div class="mb-3"><label class="fw-bold fs-5">Tên công việc</label><input type="text" class="form-control form-control-lg" name="taskName" required placeholder="Nhập tên đầu việc..."></div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold fs-5 mb-2">Người thực hiện</label>
-                                <select name="assignee" id="hiddenAssigneeSelect" multiple></select>
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center py-2" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                                        <span id="selectedText">-- Chọn nhân sự --</span><span class="badge bg-success rounded-pill" id="selectedCount">0</span>
-                                    </button>
-                                    <div class="dropdown-menu dropdown-menu-custom shadow">
-                                        <div class="group-header">⭐ Lãnh đạo Khoa</div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Thị Hương Giang"><label class="form-check-label">DS.CKI Nguyễn Thị Hương Giang - Trưởng khoa</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Trần Thị Huyền Trang"><label class="form-check-label">DSĐH Trần Thị Huyền Trang - Phó khoa</label></div>
-
-                                        <div class="group-header">💊 Nhân viên khoa</div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Chu Đài Trang"><label class="form-check-label">DS.CKI Chu Đài Trang</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Phạm Bá Thương"><label class="form-check-label">DSĐH Phạm Bá Thương</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Lê Thị Thanh Nhàn"><label class="form-check-label">DSĐH Lê Thị Thanh Nhàn</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Duy Tiến"><label class="form-check-label">DSĐH Nguyễn Duy Tiến (Tổ trưởng)</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Thị Hằng"><label class="form-check-label">DSĐH Nguyễn Thị Hằng</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Kiều Mạnh Toàn"><label class="form-check-label">DSĐH Kiều Mạnh Toàn</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Đỗ Thị Nhật Lệ"><label class="form-check-label">DSĐH Đỗ Thị Nhật Lệ</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Thị Thu Hà"><label class="form-check-label">DSĐH Nguyễn Thị Thu Hà</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Hà Thị Thảo"><label class="form-check-label">DS Hà Thị Thảo</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Nguyễn Tuấn Thành"><label class="form-check-label">DS Nguyễn Tuấn Thành</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Vũ Thị Hồng Hạnh"><label class="form-check-label">DSĐH Vũ Thị Hồng Hạnh</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Hà Thu Trang"><label class="form-check-label">DSĐH Hà Thu Trang</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Đoàn Thị Mai Hương"><label class="form-check-label">DSĐH Đoàn Thị Mai Hương</label></div>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox" value="Triệu Thị Vỵ"><label class="form-check-label">DSĐH Triệu Thị Vỵ</label></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold fs-5 mb-2">Trạng thái & Ưu tiên</label>
-                                <select class="form-select mb-3" name="status"><option value="Todo" selected>Todo (Chờ)</option><option value="Doing">Doing (Đang làm)</option></select>
-                                <select class="form-select" name="priority"><option value="P1">🔴 Cao</option><option value="P2" selected>🟡 Trung bình</option><option value="P3">🟢 Thấp</option></select>
+                        <div class="mb-3"><label class="fw-bold">Tên công việc</label><input type="text" class="form-control" name="taskName" required></div>
+                        <div class="mb-3">
+                            <label class="fw-bold">Người thực hiện</label>
+                            <select name="assignee" id="hiddenAssigneeSelect" multiple></select>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                    <span id="selectedText">-- Chọn nhân sự --</span><span class="badge bg-success rounded-pill" id="selectedCount">0</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-custom shadow" id="checkboxContainer"></div>
                             </div>
                         </div>
-                        <div class="mb-3"><label class="fw-bold fs-5">Deadline</label><input type="date" class="form-control" name="deadline"></div>
-                        <div class="mb-4"><label class="fw-bold fs-5">Ghi chú</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
-                        <button type="submit" class="btn btn-success w-100 fw-bold py-3 fs-5" id="submitBtn">LƯU CÔNG VIỆC</button>
+                        <div class="row">
+                            <div class="col-md-4 mb-3"><label class="fw-bold">Trạng thái</label><select class="form-select" name="status"><option value="Todo">Todo</option><option value="Doing">Doing</option></select></div>
+                            <div class="col-md-4 mb-3"><label class="fw-bold">Ưu tiên</label><select class="form-select" name="priority"><option value="P1">🔴 Cao</option><option value="P2" selected>🟡 TB</option><option value="P3">🟢 Thấp</option></select></div>
+                            <div class="col-md-4 mb-3"><label class="fw-bold">Độ khó</label><select class="form-select" name="difficulty"><option value="Dễ">🟢 Dễ</option><option value="Bình thường" selected>🔵 BT</option><option value="Khó">🟠 Khó</option><option value="Rất khó">🔴 Rất khó</option></select></div>
+                        </div>
+                        <div class="mb-3"><label class="fw-bold">Deadline</label><input type="date" class="form-control" name="deadline"></div>
+                        <div class="mb-3"><textarea class="form-control" name="notes" rows="2" placeholder="Ghi chú..."></textarea></div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold" id="submitBtn">LƯU CÔNG VIỆC</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <div class="tab-pane fade" id="pills-list">
+        <div class="tab-pane fade show active" id="pills-list">
             <div class="card card-custom p-4">
-                <div class="row g-3 mb-4 bg-light p-3 rounded mx-0 border">
-                    <div class="col-md-4"><select id="filterAssignee" class="form-select" onchange="renderTable()"><option value="">-- Tất cả nhân viên --</option></select></div>
-                    <div class="col-md-3"><select id="filterStatus" class="form-select" onchange="renderTable()"><option value="">-- Tất cả TT --</option><option value="Todo">Todo</option><option value="Doing">Doing</option><option value="Done">Done</option></select></div>
-                    <div class="col-md-3"><input type="text" id="filterText" class="form-control" placeholder="Tìm tên việc..." onkeyup="renderTable()"></div>
-                    <div class="col-md-2"><button class="btn btn-primary w-100 fw-bold" onclick="loadTaskList()">🔄 Tải lại</button></div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-3"><select id="filterAssignee" class="form-select form-select-sm" onchange="renderTable()"><option value="">NV: Tất cả</option></select></div>
+                    <div class="col-md-3"><select id="filterStatus" class="form-select form-select-sm" onchange="renderTable()"><option value="">TT: Tất cả</option><option value="Todo">Todo</option><option value="Doing">Doing</option><option value="Done">Done</option></select></div>
+                    <div class="col-md-4"><input type="text" id="filterText" class="form-control form-control-sm" placeholder="Tìm..." onkeyup="renderTable()"></div>
+                    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="loadTaskList()">🔄 Tải</button></div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle border" style="font-size: 1rem;">
-                        <thead class="table-success">
-                            <tr>
-                                <th width="25%">Công việc</th>
-                                <th width="20%">Tiến độ</th>
-                                <th width="15%">Người làm</th>
-                                <th width="10%">Ngày tạo</th>
-                                <th width="10%">Deadline</th>
-                                <th width="8%">Trạng thái</th>
-                                <th width="12%">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody id="taskTableBody"><tr><td colspan="7" class="text-center py-5">Đang tải...</td></tr></tbody>
-                    </table>
+                <div class="table-responsive"><table class="table table-hover align-middle border"><tbody id="taskTableBody"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-compliance">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card card-custom p-3 h-100">
+                        <h5 class="text-danger fw-bold text-center">⚖️ Ghi nhận Vi phạm</h5>
+                        <form id="complianceForm">
+                            <div class="mb-2"><label class="fw-bold small">Nhân viên</label><select class="form-select" name="person" id="compliancePerson" required></select></div>
+                            <div class="mb-2"><label class="fw-bold small">Lỗi vi phạm</label><textarea class="form-control" name="fault" rows="3" required></textarea></div>
+                            <div class="mb-3"><label class="fw-bold small">Ghi chú</label><input type="text" class="form-control" name="note"></div>
+                            <button type="submit" class="btn btn-danger w-100" id="btnCompliance">Lưu ghi nhận</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card card-custom p-3 h-100">
+                        <div class="d-flex justify-content-between mb-3"><h5 class="fw-bold text-secondary">📜 Lịch sử</h5><button class="btn btn-sm btn-outline-secondary" onclick="loadCompliance()">🔄 Tải lại</button></div>
+                        <div class="table-responsive"><table class="table table-sm table-striped"><thead class="table-light"><tr><th>Ngày</th><th>Nhân viên</th><th>Lỗi</th><th>Ghi chú</th></tr></thead><tbody id="complianceBody"></tbody></table></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -146,215 +130,221 @@
     </div>
 </div>
 
+<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">🔐 Admin Login</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <input type="password" id="adminPassword" class="form-control" placeholder="Nhập mật khẩu...">
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-primary w-100" onclick="performLogin()">Đăng nhập</button></div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // --- CẤU HÌNH ---
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz431QWLdlg-16z2RFGFHSzIpCfF4Dq1XRpmVjvuPQDql0iqBn0rYlf_Ka_C0Js7GaaYw/exec"; 
-    
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw51LetNT-RNoH2qXvOr_FlDULfLqxciUob_T5XDDED2xWIcZsWOIZMQMb88sq8nqn2Sw/exec"; 
     let globalData = [];
+    let currentPass = ""; // Lưu pass tạm thời
 
-    // --- CHECKBOX LOGIC ---
-    const checkboxes = document.querySelectorAll('.dropdown-menu-custom .form-check-input');
-    const hiddenSelect = document.getElementById('hiddenAssigneeSelect');
-    const selectedText = document.getElementById('selectedText');
-    const selectedCount = document.getElementById('selectedCount');
+    const STAFF_GROUPS = {
+        "⭐ Lãnh đạo Khoa": ["Nguyễn Thị Hương Giang", "Trần Thị Huyền Trang"],
+        "💊 Nhân viên": ["Chu Đài Trang", "Phạm Bá Thương", "Lê Thị Thanh Nhàn", "Nguyễn Duy Tiến", "Nguyễn Thị Hằng", "Kiều Mạnh Toàn", "Đỗ Thị Nhật Lệ", "Nguyễn Thị Thu Hà", "Hà Thị Thảo", "Nguyễn Tuấn Thành", "Vũ Thị Hồng Hạnh", "Hà Thu Trang", "Đoàn Thị Mai Hương", "Triệu Thị Vỵ"],
+    };
 
-    checkboxes.forEach((cb, index) => {
-        const option = document.createElement('option'); option.value = cb.value; option.text = cb.value; hiddenSelect.add(option);
-        cb.addEventListener('change', () => { hiddenSelect.options[index].selected = cb.checked; updateDisplay(); });
-    });
+    // --- KHỞI TẠO ---
+    loadTaskList(); // Mặc định tải danh sách
+    checkLoginState(); // Kiểm tra xem đã đăng nhập chưa
+    initCheckboxes(); initSingleSelect('compliancePerson');
 
-    function updateDisplay() {
-        let count = 0, names = [];
-        checkboxes.forEach(cb => { if(cb.checked) { count++; names.push(cb.value); } });
-        selectedCount.innerText = count;
-        if(count === 0) selectedText.innerText = "-- Chọn nhân sự --";
-        else if(count <= 2) selectedText.innerText = names.join(", ");
-        else selectedText.innerText = `Đã chọn ${count} người`;
+    // --- 🔐 LOGIC ĐĂNG NHẬP ---
+    function showLoginModal() { new bootstrap.Modal(document.getElementById('loginModal')).show(); }
+    
+    function performLogin() {
+        const pass = document.getElementById('adminPassword').value;
+        if(pass) {
+            currentPass = pass; // Lưu vào biến
+            sessionStorage.setItem('admin_pass', pass); // Lưu vào session
+            applyLoginState(true);
+            // Ẩn modal
+            const modalEl = document.getElementById('loginModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            alert("🔓 Đã mở khóa tính năng Quản lý!");
+        }
     }
 
-    // 1. GỬI FORM
+    function logout() {
+        sessionStorage.removeItem('admin_pass');
+        currentPass = "";
+        applyLoginState(false);
+        location.reload(); // Tải lại trang về mặc định
+    }
+
+    function checkLoginState() {
+        const savedPass = sessionStorage.getItem('admin_pass');
+        if(savedPass) {
+            currentPass = savedPass;
+            applyLoginState(true);
+        } else {
+            applyLoginState(false);
+        }
+    }
+
+    function applyLoginState(isLoggedIn) {
+        const adminTabs = document.querySelectorAll('.admin-only');
+        const btnLogin = document.getElementById('btnLogin');
+        const btnLogout = document.getElementById('btnLogout');
+
+        if(isLoggedIn) {
+            adminTabs.forEach(el => el.style.setProperty("display", "block", "important"));
+            btnLogin.classList.add('d-none');
+            btnLogout.classList.remove('d-none');
+        } else {
+            adminTabs.forEach(el => el.style.setProperty("display", "none", "important"));
+            btnLogin.classList.remove('d-none');
+            btnLogout.classList.add('d-none');
+        }
+    }
+
+    // --- CÁC FORM CẦN MẬT KHẨU ---
+    // 1. GIAO VIỆC
     document.getElementById('taskForm').addEventListener('submit', e => {
         e.preventDefault();
-        if(selectedCount.innerText == "0") { alert("⚠️ Chọn ít nhất 1 người!"); return; }
-        const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Đang lưu...";
+        if(!currentPass) { alert("⛔ Phiên đăng nhập hết hạn!"); return; }
         
-        const selectedValues = Array.from(hiddenSelect.selectedOptions).map(opt => opt.value);
-        const formData = new FormData(document.getElementById('taskForm'));
-        const data = Object.fromEntries(formData.entries());
-        data.assignee = selectedValues.join(', '); 
+        const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Đang lưu...";
+        const selectedValues = Array.from(document.getElementById('hiddenAssigneeSelect').selectedOptions).map(o => o.value);
+        const data = Object.fromEntries(new FormData(e.target).entries());
+        data.assignee = selectedValues.join(', ');
+        data.password = currentPass; // Gửi kèm mật khẩu
 
-        fetch(SCRIPT_URL + "?action=add", { method: 'POST', body: JSON.stringify(data) })
-        .then(r => r.json()).then(res => {
-            alert("✅ Đã giao việc!"); document.getElementById('taskForm').reset();
-            checkboxes.forEach(cb => cb.checked = false); updateDisplay();
-            document.querySelector('[data-bs-target="#pills-list"]').click();
+        fetch(SCRIPT_URL + "?action=add", { method: 'POST', body: JSON.stringify(data) }).then(r => r.json()).then(res => {
+            if(res.status === 'success') {
+                alert(res.message); e.target.reset(); 
+                document.querySelectorAll('#checkboxContainer input').forEach(c => c.checked = false);
+                updateDisplay(document.getElementById('hiddenAssigneeSelect'), document.getElementById('selectedText'), document.getElementById('selectedCount'));
+                document.querySelector('[data-bs-target="#pills-list"]').click();
+            } else { alert(res.message); }
         }).finally(() => { btn.disabled = false; btn.innerText = "LƯU CÔNG VIỆC"; });
     });
 
-    // 2. TẢI DỮ LIỆU
+    // 2. NỘI QUY
+    document.getElementById('complianceForm').addEventListener('submit', e => {
+        e.preventDefault();
+        if(!currentPass) { alert("⛔ Vui lòng đăng nhập!"); return; }
+        const btn = document.getElementById('btnCompliance'); btn.disabled = true; btn.innerText = "Đang lưu...";
+        const data = Object.fromEntries(new FormData(e.target).entries());
+        data.password = currentPass;
+
+        fetch(SCRIPT_URL + "?action=add_compliance", { method: 'POST', body: JSON.stringify(data) })
+        .then(r => r.json()).then(res => {
+            if(res.status === 'success') { alert(res.message); e.target.reset(); loadCompliance(); }
+            else { alert(res.message); }
+        }).finally(() => { btn.disabled = false; btn.innerText = "Lưu ghi nhận"; });
+    });
+
+    // --- CÁC HÀM TIỆN ÍCH (CheckBox, Select...) ---
+    function initCheckboxes() {
+        const container = document.getElementById('checkboxContainer');
+        const hiddenSelect = document.getElementById('hiddenAssigneeSelect');
+        const selectedText = document.getElementById('selectedText');
+        const selectedCount = document.getElementById('selectedCount');
+        container.innerHTML = ""; let index = 0;
+        for (const [group, people] of Object.entries(STAFF_GROUPS)) {
+            container.innerHTML += `<div class="group-header">${group}</div>`;
+            people.forEach(name => {
+                hiddenSelect.add(new Option(name, name));
+                const div = document.createElement('div'); div.className = 'form-check';
+                div.innerHTML = `<input class="form-check-input" type="checkbox" value="${name}" id="chk${index}"><label class="form-check-label" for="chk${index}">${name}</label>`;
+                container.appendChild(div);
+                const cb = div.querySelector('input');
+                cb.addEventListener('change', () => { hiddenSelect.options[index].selected = cb.checked; updateDisplay(hiddenSelect, selectedText, selectedCount); });
+                index++;
+            });
+        }
+    }
+    function initSingleSelect(elementId) {
+        const select = document.getElementById(elementId); select.innerHTML = '<option value="">-- Chọn --</option>';
+        for (const [group, people] of Object.entries(STAFF_GROUPS)) {
+            const optgroup = document.createElement('optgroup'); optgroup.label = group;
+            people.forEach(name => { optgroup.innerHTML += `<option value="${name}">${name}</option>`; });
+            select.appendChild(optgroup);
+        }
+    }
+    function updateDisplay(select, textEl, countEl) {
+        let count = 0, names = [];
+        Array.from(select.options).forEach(opt => { if(opt.selected) { count++; names.push(opt.value); } });
+        countEl.innerText = count; textEl.innerText = count === 0 ? "-- Chọn nhân sự --" : (count <= 2 ? names.join(", ") : `Đã chọn ${count} người`);
+    }
+
+    // DATA LOADING & RENDERING
+    function loadCompliance() {
+        const tbody = document.getElementById('complianceBody'); tbody.innerHTML = '<tr><td colspan="4" class="text-center">Đang tải...</td></tr>';
+        fetch(SCRIPT_URL + "?action=read_compliance").then(r => r.json()).then(res => {
+            tbody.innerHTML = "";
+            if(!res.data || res.data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chưa có dữ liệu</td></tr>'; return; }
+            res.data.reverse().forEach(row => { tbody.innerHTML += `<tr><td>${new Date(row[1]).toLocaleDateString('vi-VN')}</td><td class="fw-bold">${row[2]}</td><td class="text-danger">${row[3]}</td><td>${row[4]||''}</td></tr>`; });
+        });
+    }
+
     function loadTaskList() {
-        if(SCRIPT_URL.includes("DÁN_LINK")) { alert("Chưa dán Link API!"); return; }
-        const tbody = document.getElementById('taskTableBody');
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div></td></tr>';
-        fetch(SCRIPT_URL + "?action=read").then(r => r.json()).then(res => {
-            globalData = res.data; populateAssigneeFilter(globalData); renderTable();
-        });
+        const tbody = document.getElementById('taskTableBody'); tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div></td></tr>';
+        fetch(SCRIPT_URL).then(r => r.json()).then(res => { globalData = res.data; populateFilter(); renderTable(); });
     }
-
-    function populateAssigneeFilter(data) {
+    function populateFilter() {
         const select = document.getElementById('filterAssignee');
-        const currentVal = select.value;
-        let allPeople = [];
-        data.forEach(row => {
-            let assigneeStr = String(row[7] || "");
-            let peopleInRow = assigneeStr.split(',').map(s => s.trim()).filter(n => n);
-            allPeople.push(...peopleInRow);
-        });
-        const uniquePeople = [...new Set(allPeople)].sort();
-        select.innerHTML = '<option value="">-- Tất cả nhân viên --</option>';
-        uniquePeople.forEach(p => select.innerHTML += `<option value="${p}">${p}</option>`);
-        select.value = currentVal;
+        let allPeople = []; globalData.forEach(row => allPeople.push(...String(row[7]).split(',').map(s=>s.trim()).filter(n=>n)));
+        [...new Set(allPeople)].sort().forEach(p => select.innerHTML += `<option value="${p}">${p}</option>`);
     }
-
-    // 3. VẼ BẢNG (XỬ LÝ GIA HẠN)
     function renderTable() {
         const tbody = document.getElementById('taskTableBody'); tbody.innerHTML = "";
         const fName = document.getElementById('filterAssignee').value.toLowerCase().trim();
         const fStatus = document.getElementById('filterStatus').value;
         const fText = document.getElementById('filterText').value.toLowerCase().trim();
-
-        let filteredData = globalData.filter(row => {
-            let assignee = String(row[7] || "").toLowerCase(); 
-            let status = String(row[2] || "").trim();
-            let taskName = String(row[1] || "").toLowerCase();
-            return (fName === "" || assignee.includes(fName)) && (fStatus === "" || status.toLowerCase() === fStatus.toLowerCase()) && (fText === "" || taskName.includes(fText));
+        let filtered = globalData.filter(row => {
+            let assignee = String(row[7]).toLowerCase(), status = String(row[2]).trim(), name = String(row[1]).toLowerCase();
+            return (fName===""||assignee.includes(fName)) && (fStatus===""||status.toLowerCase()===fStatus.toLowerCase()) && (fText===""||name.includes(fText));
         });
-
-        filteredData.sort((a,b) => (String(a[2]).trim() === 'Done') - (String(b[2]).trim() === 'Done'));
-
-        filteredData.forEach(row => {
-            // Index: 0:ID, 1:Name, 2:Status, 3:Priority, 4:Deadline, 5:Note, 6:Created, 7:Assignee, 8:Progress, 9:ExtendedDate
-            let id = row[0]; let name = row[1]; let rawStatus = String(row[2] || "").trim();
-            let originalDeadline = row[4] ? new Date(row[4]) : null;
-            let extendedDeadlineStr = row[9] ? row[9] : null; // Cột J
-            let extendedDeadline = extendedDeadlineStr ? new Date(extendedDeadlineStr) : null;
+        filtered.sort((a,b) => (String(a[2]).trim()==='Done')-(String(b[2]).trim()==='Done'));
+        filtered.forEach(row => {
+            let id=row[0], name=row[1], status=String(row[2]).trim(), created=new Date(row[6]).toLocaleDateString('vi-VN'), assignee=row[7], progress=parseInt(String(row[8]).replace('%',''))||0;
+            let diff = row[10] || "", diffBadge = diff ? `<span class="badge bg-light text-dark border ms-1">${diff}</span>` : "";
+            let rawDL = row[9] || row[4], dlDisplay = "";
+            if(row[9]) dlDisplay = `<span style="text-decoration:line-through;color:#999;font-size:0.8em">${new Date(row[4]).toLocaleDateString('vi-VN')}</span><br><span style="color:#dc3545;font-weight:bold">${new Date(row[9]).toLocaleDateString('vi-VN')}</span>`;
+            else if(row[4]) dlDisplay = new Date(row[4]).toLocaleDateString('vi-VN');
             
-            let createdDate = row[6] ? new Date(row[6]).toLocaleDateString('vi-VN') : '';
-            let assignee = row[7]; let progress = parseInt(String(row[8] || "0").replace('%','')) || 0;
-            let badgeClass = rawStatus === 'Done' ? 'bg-done' : (rawStatus === 'Doing' ? 'bg-doing' : 'bg-todo');
+            let slider = status==='Done' ? `<div class="progress" style="height:20px"><div class="progress-bar bg-success" style="width:100%">100%</div></div>` :
+                `<div class="d-flex align-items-center"><input type="range" class="range-slider me-2" min="0" max="100" step="10" value="${progress}" onchange="updateProgress('${id}',this.value)"><span class="badge bg-secondary" id="val-${id}" style="min-width:35px">${progress}%</span></div>`;
+            let badgeCls = status==='Done'?'bg-done':(status==='Doing'?'bg-doing':'bg-todo');
+            let btns = status!=='Done' ? `<button class="btn btn-sm btn-outline-success mb-1 w-100" onclick="markDone('${id}')">✅ Xong</button>
+                                          <button class="btn btn-action btn-email" onclick="openEmailDraft('${name}','${assignee}','${row[9]||row[4]}')">📧 Email</button>` : '';
 
-            // XỬ LÝ HIỂN THỊ DEADLINE GIA HẠN
-            let deadlineHTML = "";
-            let displayDate = "";
-            
-            if (extendedDeadline) {
-                // Có gia hạn
-                displayDate = extendedDeadline.toLocaleDateString('vi-VN');
-                deadlineHTML = `<span class="deadline-original">${originalDeadline ? originalDeadline.toLocaleDateString('vi-VN') : '...'}</span>
-                                <span class="deadline-extended">${displayDate}</span>`;
-            } else if (originalDeadline) {
-                // Không gia hạn
-                displayDate = originalDeadline.toLocaleDateString('vi-VN');
-                deadlineHTML = displayDate;
-            } else {
-                deadlineHTML = "";
-            }
-
-            let doneBtn = rawStatus !== 'Done' ? `<button class="btn btn-action btn-done" onclick="markAsDone('${id}')">✅ Xong</button>` : ``;
-            // Gửi Zalo sử dụng ngày hiển thị cuối cùng
-            let zaloBtn = rawStatus !== 'Done' ? `<button class="btn btn-action btn-zalo" onclick="sendZalo('${name}', '${assignee}', '${displayDate}', ${extendedDeadline ? true : false})">💬 Zalo</button>` : ``;
-
-            let sliderHTML = rawStatus === 'Done' ? 
-                `<div class="progress" style="height: 24px;"><div class="progress-bar bg-success" style="width: 100%">100%</div></div>` : 
-                `<div class="d-flex align-items-center"><input type="range" class="range-slider me-2" min="0" max="100" step="10" value="${progress}" onchange="updateProgress('${id}', this.value)"><span class="badge bg-secondary" id="val-${id}" style="min-width: 45px;">${progress}%</span></div>`;
-
-            tbody.innerHTML += `<tr>
-                <td><div class="fw-bold text-primary text-break">${name}</div><small class="text-muted fst-italic">${row[5] || ''}</small></td>
-                <td>${sliderHTML}</td>
-                <td><span class="fw-bold small">${assignee}</span></td>
-                <td><small>${createdDate}</small></td>
-                <td>${deadlineHTML}</td>
-                <td><span class="badge badge-status ${badgeClass}">${rawStatus}</span></td>
-                <td><div class="d-flex flex-column">${doneBtn}${zaloBtn}</div></td>
-            </tr>`;
+            tbody.innerHTML += `<tr><td><span class="fw-bold text-primary">${name}</span>${diffBadge}<br><small class="text-muted">${row[5]||''}</small></td>
+                <td>${slider}</td><td><small class="fw-bold">${assignee}</small></td><td>${created}</td><td>${dlDisplay}</td>
+                <td><span class="badge badge-status ${badgeCls}">${status}</span></td><td>${btns}</td></tr>`;
         });
     }
 
-    function updateProgress(id, value) {
-        document.getElementById(`val-${id}`).innerText = value + "%";
-        fetch(SCRIPT_URL + "?action=update_progress", { method: 'POST', body: JSON.stringify({ id: id, progress: value }) })
-        .then(r => r.json()).then(res => { if(value == 100) loadTaskList(); });
-    }
-    function markAsDone(taskId) {
-        if (!confirm("Xác nhận hoàn thành?")) return;
-        fetch(SCRIPT_URL + "?action=update", { method: 'POST', body: JSON.stringify({ id: taskId }) }).then(r => r.json()).then(res => { alert(res.message); loadTaskList(); });
-    }
-    
-    // Zalo thông minh: Biết được là gia hạn hay không
-    function sendZalo(taskName, personName, deadline, isExtended) {
-        let label = isExtended ? "Hạn chót (ĐÃ GIA HẠN):" : "Hạn chót:";
-        const text = `⚠️ NHẮC VIỆC KHOA DƯỢC\n\nKính gửi: ${personName}\nCông việc: "${taskName}"\n${label} ${deadline}\n\nĐề nghị cập nhật tiến độ.`;
-        navigator.clipboard.writeText(text).then(() => { if(confirm("Đã COPY nội dung! Mở Zalo dán ngay?")) window.open('https://chat.zalo.me/', '_blank'); });
+    function updateProgress(id, v) { document.getElementById(`val-${id}`).innerText=v+'%'; fetch(SCRIPT_URL+"?action=update_progress",{method:'POST',body:JSON.stringify({id:id,progress:v})}).then(r=>r.json()).then(res=>{if(v==100)loadTaskList()}); }
+    function markDone(id) { if(confirm('Xong chưa?')) fetch(SCRIPT_URL+"?action=update",{method:'POST',body:JSON.stringify({id:id})}).then(r=>r.json()).then(res=>{alert(res.message);loadTaskList()}); }
+    function openEmailDraft(taskName, personName, deadline) {
+        let dlStr = deadline ? new Date(deadline).toLocaleDateString('vi-VN') : 'Sớm nhất';
+        var subject = "⚠️ NHẮC VIỆC KHOA DƯỢC: " + taskName;
+        var body = "Chào " + personName + ",\n\nCông việc: " + taskName + "\nHạn chót: " + dlStr + "\n\nĐề nghị cập nhật tiến độ.\n\nTrân trọng.";
+        window.location.href = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
     }
 
-    // 4. BÁO CÁO & LỊCH (UPDATE LỊCH THEO GIA HẠN)
-    google.charts.load('current', {'packages':['corechart', 'bar']});
-    function loadDashboard() {
-        if(SCRIPT_URL.includes("DÁN_LINK")) return;
-        fetch(SCRIPT_URL + "?action=read").then(r => r.json()).then(res => { drawCharts(res.data); renderCalendar(res.data); });
-    }
-
-    function drawCharts(data) { /* ... Giữ nguyên ... */ 
-        if(!data || data.length === 0) return;
-        var statusCount = {'Todo': 0, 'Doing': 0, 'Done': 0};
-        var personStats = {}; 
-        data.forEach(row => {
-            let status = String(row[2] || "").trim();
-            let assigneeStr = String(row[7] || "");
-            if(statusCount[status] !== undefined) statusCount[status]++; else statusCount['Doing'] = (statusCount['Doing'] || 0) + 1;
-            let peopleInRow = assigneeStr.split(',').map(s => s.trim()).filter(n => n);
-            peopleInRow.forEach(person => { if(!personStats[person]) personStats[person] = { count: 0 }; personStats[person].count++; });
-        });
-        new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable([['S','C'],['Todo',statusCount['Todo']],['Doing',statusCount['Doing']],['Done',statusCount['Done']]]),{colors:['#dc3545','#ffc107','#198754'],is3D:true,legend:{position:'bottom'}, title: 'Tỉ lệ hoàn thành', titleTextStyle:{fontSize: 16}});
-        var cA = [['NV','Số việc',{role:'style'}]]; Object.keys(personStats).sort().forEach(p=>cA.push([p,personStats[p].count,'#0d6efd']));
-        new google.visualization.ColumnChart(document.getElementById('barchart_count')).draw(google.visualization.arrayToDataTable(cA),{legend:{position:"none"}, title: 'Số lượng việc', titleTextStyle:{fontSize: 16}});
-    }
-
-    function renderCalendar(data) {
-        var calendarEl = document.getElementById('calendar');
-        var events = data.map(row => {
-            let name = row[1]; let status = String(row[2] || "").trim(); 
-            let assignee = row[7];
-            
-            // LOGIC LẤY DEADLINE LỊCH: Ưu tiên ngày gia hạn (Cột J - index 9)
-            let rawDeadline = row[9] ? row[9] : row[4];
-            
-            let color = '#3788d8'; if(status==='Done') color='#198754'; else if(status==='Todo') color='#dc3545'; else if(status==='Doing') color='#ffc107';
-            
-            if(rawDeadline) { 
-                let d = new Date(rawDeadline).toISOString().split('T')[0]; 
-                let title = `${name} (${assignee})`;
-                // Thêm ký hiệu nếu là gia hạn
-                if (row[9]) title = `[GH] ${title}`;
-                
-                return { title: title, start: d, color: color, textColor: status==='Doing'?'#333':'white' }; 
-            } return null;
-        }).filter(e=>e!==null);
-        
-        if(window.myCalendar) { window.myCalendar.removeAllEvents(); window.myCalendar.addEventSource(events); } 
-        else {
-            window.myCalendar = new FullCalendar.Calendar(calendarEl, { 
-                initialView: 'dayGridMonth', locale: 'vi', height: '85vh', 
-                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' }, 
-                buttonText: { today: 'Hôm nay', month: 'Tháng', list: 'Danh sách' },
-                events: events, 
-                eventClick: function(i){ alert('📌 ' + i.event.title + '\n📅 Hạn: ' + i.event.start.toLocaleDateString('vi-VN')); } 
-            });
-            window.myCalendar.render(); setTimeout(()=>{window.myCalendar.updateSize()},200);
-        }
-    }
+    google.charts.load('current',{'packages':['corechart','bar']});
+    function loadDashboard() { if(SCRIPT_URL.includes("DÁN_LINK")) return; fetch(SCRIPT_URL).then(r=>r.json()).then(res=>{ drawCharts(res.data);
+            var events = res.data.map(r => { let d = r[9] || r[4]; if(!d) return null; return { title: r[1], start: new Date(d).toISOString().split('T')[0], color: r[2]==='Done'?'#198754':(r[2]==='Todo'?'#dc3545':'#ffc107'), textColor: r[2]==='Doing'?'black':'white' }; }).filter(e=>e);
+            var cal = new FullCalendar.Calendar(document.getElementById('calendar'), { initialView:'dayGridMonth', locale:'vi', height:'80vh', events:events }); cal.render(); setTimeout(()=>cal.updateSize(),200); }); }
+    function drawCharts(data) { var s={'Todo':0,'Doing':0,'Done':0}, p={}; data.forEach(r=>{ s[String(r[2]).trim()]++; String(r[7]).split(',').forEach(n=>{ n=n.trim(); if(n){ if(!p[n])p[n]=0; p[n]++; } }); });
+        new google.visualization.PieChart(document.getElementById('piechart')).draw(google.visualization.arrayToDataTable([['S','C'],['Todo',s.Todo],['Doing',s.Doing],['Done',s.Done]]),{colors:['#dc3545','#ffc107','#198754'],is3D:true});
+        var arr=[['NV','Việc',{role:'style'}]]; Object.keys(p).sort().forEach(k=>arr.push([k,p[k],'#0d6efd']));
+        new google.visualization.ColumnChart(document.getElementById('barchart_count')).draw(google.visualization.arrayToDataTable(arr),{legend:{position:"none"}}); }
 </script>
 </body>
 </html>
