@@ -118,9 +118,12 @@
 
         <div class="tab-pane fade" id="pills-report">
             <div class="row g-4 mb-4">
-                <div class="col-md-4"><div class="card card-custom p-3 h-100"><h6 class="text-center fw-bold text-secondary">Tỉ lệ hoàn thành</h6><div id="piechart_task" style="height:250px;"></div></div></div>
-                <div class="col-md-4"><div class="card card-custom p-3 h-100"><h6 class="text-center fw-bold text-secondary">Khối lượng việc</h6><div id="barchart_task" style="height:250px;"></div></div></div>
-                <div class="col-md-4"><div class="card card-custom p-3 h-100"><h6 class="text-center fw-bold text-danger">Vi phạm Nội quy</h6><div id="columnchart_compliance" style="height:250px;"></div></div></div>
+                <div class="col-md-6"><div class="card card-custom p-3 h-100"><h6 class="text-center fw-bold text-secondary">📊 Tỉ lệ hoàn thành công việc</h6><div id="piechart_task" style="height:300px;"></div></div></div>
+                <div class="col-md-6"><div class="card card-custom p-3 h-100"><h6 class="text-center fw-bold text-secondary">📈 Số lượng công việc được giao</h6><div id="barchart_task" style="height:300px;"></div></div></div>
+            </div>
+            <div class="row g-4 mb-4">
+                <div class="col-md-6"><div class="card card-custom p-3 h-100"><h6 class="text-center fw-bold text-danger">⚠️ Tình hình Vi phạm Nội quy</h6><div id="columnchart_violation" style="height:300px;"></div></div></div>
+                <div class="col-md-6"><div class="card card-custom p-3 h-100"><h6 class="text-center fw-bold text-warning">🏆 Tình hình Khen thưởng</h6><div id="columnchart_reward" style="height:300px;"></div></div></div>
             </div>
             <div class="card card-custom p-4"><h5 class="text-success fw-bold mb-3">📅 LỊCH TỔNG HỢP</h5><div id="calendar"></div></div>
         </div>
@@ -137,8 +140,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7-lNVKc-a96H7kk2LO_raaMT4VQMqpYe-eDFwkX9heJqiVnvUvAXdlXZlkJaAdDseGw/exec"; 
-    let globalData = [], currentUser = null; // { username, name, role }
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz21h7YsV9Rhp3qT8qdBvK2-lze5dfAZW1GE_WRZIkptUmKiTc_g-8l_hB-tE5cNOInCQ/exec"; 
+    let globalData = [], currentUser = null;
 
     const STAFF_GROUPS = {
         "💊 Thành viên khoa": ["Nguyễn Thị Hương Giang - Trưởng Khoa", "Trần Thị Huyền Trang - Phó Khoa", "Chu Đài Trang", "Phạm Bá Thương", "Lê Thị Thanh Nhàn", "Nguyễn Duy Tiến", "Nguyễn Thị Hằng", "Kiều Mạnh Toàn", "Đỗ Thị Nhật Lệ", "Nguyễn Thị Thu Hà", "Hà Thị Thảo", "Nguyễn Tuấn Thành", "Vũ Thị Hồng Hạnh", "Hà Thu Trang", "Đoàn Thị Mai Hương", "Triệu Thị Vỵ"]
@@ -146,12 +149,9 @@
 
     initUI(); loadTaskList(); checkSession();
 
-    function initUI() {
-        initCheckboxes(); 
-        initSingleSelect('compliancePerson');
-    }
+    function initUI() { initCheckboxes(); initSingleSelect('compliancePerson'); }
 
-    // --- LOGIN (DÙNG USERNAME) ---
+    // --- LOGIN ---
     function showLoginModal() { new bootstrap.Modal(document.getElementById('loginModal')).show(); }
     function performLogin() {
         const username = document.getElementById('loginUsername').value;
@@ -184,16 +184,11 @@
     // --- CHANGE PIN ---
     function showChangePinModal() { new bootstrap.Modal(document.getElementById('changePinModal')).show(); }
     function submitChangePin() {
-        const oldPin = document.getElementById('oldPin').value;
-        const newPin = document.getElementById('newPin').value;
-        const confirmPin = document.getElementById('confirmPin').value;
+        const oldPin = document.getElementById('oldPin').value, newPin = document.getElementById('newPin').value, confirmPin = document.getElementById('confirmPin').value;
         if(!oldPin || !newPin) return alert("Thiếu thông tin!");
         if(newPin !== confirmPin) return alert("PIN mới không khớp!");
         fetch(SCRIPT_URL + "?action=change_pin", { method: 'POST', body: JSON.stringify({ username: currentUser.username, oldPin, newPin }) })
-        .then(r => r.json()).then(res => {
-            alert(res.message);
-            if(res.status === 'success') { bootstrap.Modal.getInstance(document.getElementById('changePinModal')).hide(); logout(); }
-        });
+        .then(r => r.json()).then(res => { alert(res.message); if(res.status === 'success') { bootstrap.Modal.getInstance(document.getElementById('changePinModal')).hide(); logout(); } });
     }
 
     // --- RENDER TABLE ---
@@ -211,39 +206,22 @@
         flt.forEach(r=>{
             let id=r[0], name=r[1], status=String(r[2]).trim(), created=new Date(r[6]).toLocaleDateString('vi-VN'), assignee=r[7];
             let prog = parseProgress(r[8]);
-            
-            // CHECK OWNER (So sánh Họ tên thật)
             let isOwner = false;
-            if (currentUser) {
-                if (currentUser.role === 'Admin') isOwner = true;
-                else if (assignee.includes(currentUser.name)) isOwner = true; // Cột Data lưu tên thật
-            }
+            if (currentUser) { if (currentUser.role === 'Admin') isOwner = true; else if (assignee.includes(currentUser.name)) isOwner = true; }
             let disableClass = isOwner ? "" : "disabled-control";
-
             let diff=r[10]||"", bdgDiff=diff?`<span class="badge bg-light text-dark border ms-1">${diff}</span>`:"";
             let rawDL=r[9]||r[4], dlDisp=r[9]?`<span class="deadline-original">${new Date(r[4]).toLocaleDateString('vi-VN')}</span><span class="deadline-extended">${new Date(r[9]).toLocaleDateString('vi-VN')}</span>`:new Date(r[4]).toLocaleDateString('vi-VN');
-            
-            let slider=status==='Done'?`<div class="progress" style="height:20px"><div class="progress-bar bg-success" style="width:100%">100%</div></div>`:
-                `<div class="d-flex align-items-center ${disableClass}"><input type="range" class="range-slider me-2" min="0" max="100" step="10" value="${prog}" onchange="updateProgress('${id}',this.value)"><span class="badge bg-secondary" id="val-${id}" style="min-width:35px">${prog}%</span></div>`;
-            
+            let slider=status==='Done'?`<div class="progress" style="height:20px"><div class="progress-bar bg-success" style="width:100%">100%</div></div>`:`<div class="d-flex align-items-center ${disableClass}"><input type="range" class="range-slider me-2" min="0" max="100" step="10" value="${prog}" onchange="updateProgress('${id}',this.value)"><span class="badge bg-secondary" id="val-${id}" style="min-width:35px">${prog}%</span></div>`;
             let badgeCls=status==='Done'?'bg-done':(status==='Doing'?'bg-doing':'bg-todo');
             let btnDone = status!=='Done' ? `<button class="btn btn-sm btn-outline-success mb-1 w-100 ${disableClass}" onclick="markDone('${id}')">✅ Xong</button>` : '';
             let btnMail = status!=='Done' ? `<button class="btn btn-action btn-email ${disableClass}" onclick="sendEmailBackend('${id}','${name}','${assignee}','${r[9]||r[4]}')">📧 Email</button>` : '';
-            
             tb.innerHTML+=`<tr><td><span class="fw-bold text-primary">${name}</span>${bdgDiff}<br><small class="text-muted">${r[5]||''}</small></td><td>${slider}</td><td><small class="fw-bold">${assignee}</small></td><td>${created}</td><td>${dlDisp}</td><td><span class="badge badge-status ${badgeCls}">${status}</span></td><td>${btnDone}${btnMail}</td></tr>`;
         });
     }
 
-    // --- ACTIONS & HELPERS ---
-    function updateProgress(id, v) { 
-        if(!currentUser) return alert("Vui lòng đăng nhập!");
-        document.getElementById(`val-${id}`).innerText=v+'%'; 
-        fetch(SCRIPT_URL+"?action=update_progress",{method:'POST',body:JSON.stringify({id:id,progress:v, user_fullname: currentUser.name, role: currentUser.role})}).then(r=>r.json()).then(res=>{if(res.status==='error'){alert(res.message); loadTaskList();} else if(v==100)loadTaskList()}); 
-    }
-    function markDone(id) { 
-        if(!currentUser) return alert("Vui lòng đăng nhập!");
-        if(confirm('Xong chưa?')) fetch(SCRIPT_URL+"?action=update",{method:'POST',body:JSON.stringify({id:id, user_fullname: currentUser.name, role: currentUser.role})}).then(r=>r.json()).then(res=>{alert(res.message);loadTaskList()}); 
-    }
+    // --- ACTIONS ---
+    function updateProgress(id, v) { if(!currentUser) return alert("Vui lòng đăng nhập!"); document.getElementById(`val-${id}`).innerText=v+'%'; fetch(SCRIPT_URL+"?action=update_progress",{method:'POST',body:JSON.stringify({id:id,progress:v, user_fullname: currentUser.name, role: currentUser.role})}).then(r=>r.json()).then(res=>{if(res.status==='error'){alert(res.message); loadTaskList();} else if(v==100)loadTaskList()}); }
+    function markDone(id) { if(!currentUser) return alert("Vui lòng đăng nhập!"); if(confirm('Xong chưa?')) fetch(SCRIPT_URL+"?action=update",{method:'POST',body:JSON.stringify({id:id, user_fullname: currentUser.name, role: currentUser.role})}).then(r=>r.json()).then(res=>{alert(res.message);loadTaskList()}); }
     function parseProgress(val) { if(!val)return 0; let s=String(val).replace(/^'/,'').replace('%','').trim(); let n=parseFloat(s); return isNaN(n)?0:(n<=1&&n>0&&s.includes('.')?Math.round(n*100):Math.round(n)); }
     function loadTaskList() { document.getElementById('taskTableBody').innerHTML='<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div></td></tr>'; fetch(SCRIPT_URL).then(r=>r.json()).then(res=>{ globalData=res.data; populateFilter(); renderTable(); }); }
     function populateFilter() { const s=document.getElementById('filterAssignee'); let a=[]; globalData.forEach(r=>a.push(...String(r[7]).split(',').map(v=>v.trim()).filter(v=>v))); [...new Set(a)].sort().forEach(n=>s.innerHTML+=`<option value="${n}">${n}</option>`); }
@@ -259,8 +237,29 @@
 
     function loadCompliance(){const tb=document.getElementById('complianceBody');tb.innerHTML='<tr><td colspan="5" class="text-center">Loading...</td></tr>'; fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json()).then(res=>{ tb.innerHTML=""; if(!res.data||!res.data.length){tb.innerHTML='<tr><td colspan="5" class="text-center text-muted">Trống</td></tr>';return;} res.data.reverse().forEach(r=>{ let h=r.length>=6,t=h?r[3]:(r[3].includes("Khen")?"Khen thưởng":"Vi phạm"),c=h?r[4]:r[3],n=h?r[5]:r[4],b=t.includes("Khen")?'<span class="badge bg-warning text-dark">🏆 Khen</span>':'<span class="badge bg-danger">⚠️ Vi phạm</span>'; tb.innerHTML+=`<tr><td>${new Date(r[1]).toLocaleDateString('vi-VN')}</td><td class="fw-bold">${r[2]}</td><td>${b}</td><td>${c}</td><td>${n||''}</td></tr>`; }); }); }
     google.charts.load('current',{'packages':['corechart','bar']});
+    
+    // 🔥 DASHBOARD VỚI 4 BIỂU ĐỒ RIÊNG BIỆT
     function loadDashboard() { if(SCRIPT_URL.includes("DÁN_LINK")) return; Promise.all([fetch(SCRIPT_URL).then(r=>r.json()), fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json())]).then(([taskRes, compRes]) => { drawCharts(taskRes.data||[], compRes.data||[]); renderCal(taskRes.data||[], compRes.data||[]); }); }
-    function drawCharts(t,c) { var s={'Todo':0,'Doing':0,'Done':0},p={}; t.forEach(r=>{s[String(r[2]).trim()]++; String(r[7]).split(',').forEach(n=>{n=n.trim();if(n){if(!p[n])p[n]=0;p[n]++;}});}); new google.visualization.PieChart(document.getElementById('piechart_task')).draw(google.visualization.arrayToDataTable([['S','C'],['Todo',s.Todo],['Doing',s.Doing],['Done',s.Done]]),{colors:['#dc3545','#ffc107','#198754'],is3D:true,legend:'bottom',chartArea:{width:'90%',height:'80%'}}); var arr=[['NV','Việc',{role:'style'}]]; Object.keys(p).sort().forEach(k=>arr.push([k,p[k],'#0d6efd'])); new google.visualization.ColumnChart(document.getElementById('barchart_task')).draw(google.visualization.arrayToDataTable(arr),{legend:'none',chartArea:{width:'85%',height:'70%'}}); var pc={}; c.forEach(r=>{let n=r[2],h=r.length>=6,tp=h?r[3]:(r[3].includes("Khen")?"Khen":"Vi phạm");if(!pc[n])pc[n]=0;if(!tp.includes("Khen"))pc[n]++;}); var ac=[['NV','Vi phạm',{role:"style"}]]; Object.keys(pc).sort().forEach(k=>{if(pc[k]>0)ac.push([k,pc[k],'#dc3545']);}); if(ac.length>1) new google.visualization.ColumnChart(document.getElementById('columnchart_compliance')).draw(google.visualization.arrayToDataTable(ac),{legend:'none',chartArea:{width:'85%',height:'70%'}}); else document.getElementById('columnchart_compliance').innerHTML="<div class='text-center mt-5 text-muted'>Chưa có vi phạm!</div>"; }
+    function drawCharts(t,c) { 
+        // 1. Task Pie
+        var s={'Todo':0,'Doing':0,'Done':0},p={}; t.forEach(r=>{s[String(r[2]).trim()]++; String(r[7]).split(',').forEach(n=>{n=n.trim();if(n){if(!p[n])p[n]=0;p[n]++;}});}); 
+        new google.visualization.PieChart(document.getElementById('piechart_task')).draw(google.visualization.arrayToDataTable([['S','C'],['Todo',s.Todo],['Doing',s.Doing],['Done',s.Done]]),{colors:['#dc3545','#ffc107','#198754'],is3D:true,legend:'bottom',chartArea:{width:'90%',height:'80%'}}); 
+        
+        // 2. Task Bar
+        var arr=[['NV','Việc',{role:'style'}]]; Object.keys(p).sort().forEach(k=>arr.push([k,p[k],'#0d6efd'])); 
+        new google.visualization.ColumnChart(document.getElementById('barchart_task')).draw(google.visualization.arrayToDataTable(arr),{legend:'none',chartArea:{width:'85%',height:'70%'}}); 
+        
+        // 3. Violation Column
+        var pc={}; c.forEach(r=>{let n=r[2],h=r.length>=6,tp=h?r[3]:(r[3].includes("Khen")?"Khen":"Vi phạm");if(!pc[n])pc[n]=0;if(!tp.includes("Khen"))pc[n]++;}); 
+        var ac=[['NV','Vi phạm',{role:"style"}]]; Object.keys(pc).sort().forEach(k=>{if(pc[k]>0)ac.push([k,pc[k],'#dc3545']);}); 
+        if(ac.length>1) new google.visualization.ColumnChart(document.getElementById('columnchart_violation')).draw(google.visualization.arrayToDataTable(ac),{legend:'none',chartArea:{width:'85%',height:'70%'}}); else document.getElementById('columnchart_violation').innerHTML="<div class='text-center mt-5 text-muted'>Chưa có vi phạm!</div>";
+        
+        // 4. Reward Column
+        var pr={}; c.forEach(r=>{let n=r[2],h=r.length>=6,tp=h?r[3]:(r[3].includes("Khen")?"Khen":"Vi phạm");if(!pr[n])pr[n]=0;if(tp.includes("Khen"))pr[n]++;}); 
+        var ar=[['NV','Khen thưởng',{role:"style"}]]; Object.keys(pr).sort().forEach(k=>{if(pr[k]>0)ar.push([k,pr[k],'#ffc107']);}); 
+        if(ar.length>1) new google.visualization.ColumnChart(document.getElementById('columnchart_reward')).draw(google.visualization.arrayToDataTable(ar),{legend:'none',chartArea:{width:'85%',height:'70%'}}); else document.getElementById('columnchart_reward').innerHTML="<div class='text-center mt-5 text-muted'>Chưa có khen thưởng!</div>";
+    }
+    
     function renderCal(t,c) { var ev=[]; t.forEach(r=>{let d=r[9]||r[4];if(!d)return;ev.push({title:`${r[1]} (${r[7]})`,start:new Date(d).toISOString().split('T')[0],color:r[2]==='Done'?'#198754':(r[2]==='Todo'?'#dc3545':'#ffc107'),textColor:r[2]==='Doing'?'black':'white'});}); c.forEach(r=>{if(!r[1])return;let h=r.length>=6,tp=h?r[3]:(r[3].includes("Khen")?"Khen":"Vi phạm"),ib=tp.includes("Khen"),ct=h?r[4]:r[3];ev.push({title:ib?`🏆 ${r[2]}`:`⚠️ ${r[2]}`,start:new Date(r[1]).toISOString().split('T')[0],color:ib?'#fd7e14':'#212529',textColor:'white',description:ct});}); var cal=new FullCalendar.Calendar(document.getElementById('calendar'),{initialView:'dayGridMonth',locale:'vi',height:'85vh',headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},events:ev,eventClick:function(i){alert('📌 '+i.event.title+'\nℹ️ '+(i.event.extendedProps.description||'Deadline'));}}); cal.render(); setTimeout(()=>cal.updateSize(),200); }
 </script>
 </body>
