@@ -120,7 +120,7 @@
         .bg-done { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
         .bg-overdue { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
 
-        /* Difficulty Badges (MỚI) */
+        /* Difficulty Badges */
         .badge-diff { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; border: 1px solid transparent; margin-right: 4px;}
         .diff-easy { color: #198754; background: #d1e7dd; border-color: #a3cfbb; }
         .diff-medium { color: #fd7e14; background: #ffe5d0; border-color: #fecba1; }
@@ -179,9 +179,6 @@
             margin-right: 4px;
             margin-bottom: 4px;
         }
-        
-        /* Floating Action Button for Mobile (Optional, kept hidden for now) */
-        .fab { position: fixed; bottom: 20px; right: 20px; border-radius: 50%; width: 56px; height: 56px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -244,7 +241,7 @@
                         <label class="small text-muted fw-bold">Nhân sự</label>
                         <select id="filterAssignee" class="form-select form-select-sm" onchange="renderTable()"></select>
                     </div>
-                    <!-- THÊM: Filter Độ khó -->
+                    <!-- Filter Độ khó -->
                     <div class="col-md-2">
                         <label class="small text-muted fw-bold">Độ khó</label>
                         <select id="filterDifficulty" class="form-select form-select-sm" onchange="renderTable()">
@@ -280,8 +277,9 @@
                     <table class="table table-hover table-custom mb-0">
                         <thead>
                             <tr>
-                                <th width="35%">Công việc / Độ khó</th>
-                                <th width="20%">Tiến độ</th>
+                                <th width="30%">Công việc / Tổ</th>
+                                <th width="10%" class="text-center">Độ khó</th>
+                                <th width="15%">Tiến độ</th>
                                 <th width="15%">Người thực hiện</th>
                                 <th width="12%">Deadline</th>
                                 <th width="10%">Trạng thái</th>
@@ -319,7 +317,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- THÊM: Biểu đồ Độ khó -->
+                <!-- Biểu đồ Độ khó -->
                 <div class="col-md-6 col-lg-3">
                     <div class="card card-custom h-100">
                         <div class="card-header-custom text-center">🧩 Phân bố Độ khó</div>
@@ -422,7 +420,6 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <!-- MỚI: ĐỘ KHÓ -->
                                         <label class="form-label fw-bold">Độ khó</label>
                                         <select class="form-select" name="difficulty">
                                             <option value="1">⭐ Dễ</option>
@@ -557,14 +554,13 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // URL Script Google Apps (GIỮ NGUYÊN)
+    // URL Script Google Apps (CẦN ĐƯỢC GIỮ NGUYÊN HOẶC CẬP NHẬT NẾU ĐÃ DEPLOY MỚI)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzaHl6AXtf_nojDKKvrp_8PH_9ATdi5fc0YVVkfEyWVrBPJzeuZeWC9wm0xHZdFMzaQ3Q/exec"; 
     
     let globalData = [], globalCompliance = [], currentUser = null;
 
     const STAFF_GROUPS = {
-        "Ban Lãnh Đạo": ["Nguyễn Thị Hương Giang - Trưởng Khoa", "Trần Thị Huyền Trang - Phó Khoa"],
-        "Dược sĩ": ["Phạm Bá Thương", "Lê Thị Thanh Nhàn", "Chu Đài Trang", "Nguyễn Duy Tiến", "Nguyễn Thị Hằng", "Kiều Mạnh Toàn", "Đỗ Thị Nhật Lệ", "Nguyễn Thị Thu Hà", "Hà Thị Thảo", "Nguyễn Tuấn Thành", "Vũ Thị Hồng Hạnh", "Hà Thu Trang", "Đoàn Thị Mai Hương", "Triệu Thị Vỵ"]
+        "Dược sĩ": ["Nguyễn Thị Hương Giang - Trưởng Khoa", "Trần Thị Huyền Trang - Phó Khoa", "Phạm Bá Thương", "Lê Thị Thanh Nhàn", "Chu Đài Trang", "Nguyễn Duy Tiến", "Nguyễn Thị Hằng", "Kiều Mạnh Toàn", "Đỗ Thị Nhật Lệ", "Nguyễn Thị Thu Hà", "Hà Thị Thảo", "Nguyễn Tuấn Thành", "Vũ Thị Hồng Hạnh", "Hà Thu Trang", "Đoàn Thị Mai Hương", "Triệu Thị Vỵ"]
     };
 
     // --- KHỞI TẠO ---
@@ -673,7 +669,7 @@
 
     // --- DANH SÁCH & RENDER ---
     function loadTaskList() { 
-        document.getElementById('taskTableBody').innerHTML='<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-success"></div><div class="mt-2 text-muted">Đang tải dữ liệu...</div></td></tr>'; 
+        document.getElementById('taskTableBody').innerHTML='<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div><div class="mt-2 text-muted">Đang tải dữ liệu...</div></td></tr>'; 
         fetch(SCRIPT_URL).then(r=>r.json()).then(res=>{ globalData=res.data; populateFilter(); renderTable(); }); 
     }
 
@@ -686,12 +682,24 @@
         const fT = document.getElementById('filterText').value.toLowerCase().trim();
         const today = new Date(); today.setHours(0,0,0,0);
         
+        // Helper: Tự động chuyển trạng thái nếu qua ngày
+        const getEffectiveStatus = (rawSt, createdStr) => {
+            let createdDate = createdStr ? new Date(createdStr) : new Date();
+            createdDate.setHours(0,0,0,0);
+            // Nếu là "Mới tạo" (Todo) nhưng ngày tạo < hôm nay -> Tự động coi là "Đang làm" (Doing)
+            if (rawSt === 'Todo' && createdDate < today) return 'Doing';
+            return rawSt;
+        };
+
         let flt = globalData.filter(r => {
             let group = String(r[11] || "").toLowerCase();
-            let as = String(r[7]).toLowerCase(), st = String(r[2]).trim(), nm = String(r[1]).toLowerCase();
+            let as = String(r[7]).toLowerCase(), rawSt = String(r[2]).trim(), nm = String(r[1]).toLowerCase();
             let diff = String(r[12] || ""); // Cột độ khó
 
-            // Xử lý lọc trạng thái thông minh hơn
+            // Lấy trạng thái thực tế (đã xử lý logic qua ngày)
+            let st = getEffectiveStatus(rawSt, r[6]);
+
+            // Xử lý lọc trạng thái
             let statusMatch = true;
             let dlRaw = r[9] || r[4];
             let isOverdue = (dlRaw && new Date(dlRaw) < today && st !== 'Done');
@@ -702,7 +710,7 @@
 
             return (fG === "" || group.includes(fG)) && 
                    (fN === "" || as.includes(fN)) && 
-                   (fD === "" || diff === fD) &&  // Logic lọc độ khó
+                   (fD === "" || diff === fD) && 
                    statusMatch && 
                    (fT === "" || nm.includes(fT));
         });
@@ -710,17 +718,21 @@
         // Sort: Group -> Done/Todo -> Date
         flt.sort((a, b) => {
             const grpA = (a[11] || "").toLowerCase(), grpB = (b[11] || "").toLowerCase(); if (grpA < grpB) return -1; if (grpA > grpB) return 1;
-            const statusA = String(a[2]).trim(), statusB = String(b[2]).trim();
+            const statusA = getEffectiveStatus(String(a[2]).trim(), a[6]);
+            const statusB = getEffectiveStatus(String(b[2]).trim(), b[6]);
             const doneA = statusA === 'Done', doneB = statusB === 'Done'; if (doneA && !doneB) return 1; if (!doneA && doneB) return -1;
             const dateA = new Date(a[9] || a[4] || '9999-12-31'); const dateB = new Date(b[9] || b[4] || '9999-12-31'); return dateA - dateB;
         });
         
-        if(flt.length === 0) { tb.innerHTML='<tr><td colspan="6" class="text-center text-muted py-4">Không tìm thấy công việc nào.</td></tr>'; return; }
+        if(flt.length === 0) { tb.innerHTML='<tr><td colspan="7" class="text-center text-muted py-4">Không tìm thấy công việc nào.</td></tr>'; return; }
 
         flt.forEach(r => {
-            let id = r[0], name = r[1], status = String(r[2]).trim(), assignee = r[7];
+            let id = r[0], name = r[1], rawStatus = String(r[2]).trim(), assignee = r[7];
             let type = r[10] || "Thường quy", group = r[11] || ""; 
-            let difficulty = r[12] || ""; // Cột độ khó (mới)
+            let difficulty = r[12] || ""; 
+
+            // Áp dụng logic tự động chuyển trạng thái cho hiển thị
+            let status = getEffectiveStatus(rawStatus, r[6]);
 
             let dlRaw = r[9] || r[4], dlDisp = dlRaw ? new Date(dlRaw).toLocaleDateString('vi-VN') : '';
             let prog = parseProgress(r[8]);
@@ -737,17 +749,15 @@
             // Việt hóa hiển thị trạng thái
             let statusText = status;
             if (isOverdue) statusText = 'Quá hạn';
-            else if (status === 'Todo') statusText = 'Mới tạo';
-            else if (status === 'Doing') statusText = 'Đang làm';
+            else if (status === 'Todo') statusText = 'Mới tạo'; // Chỉ hiện khi tạo TRONG NGÀY
+            else if (status === 'Doing') statusText = 'Đang làm'; // Tự động nhảy sang đây nếu qua ngày
             else if (status === 'Done') statusText = 'Hoàn thành';
             
             // Xử lý hiển thị Deadline hoặc Thường quy
             let dlHtml = '';
             if (!dlRaw || type === 'Thường quy') {
-                 // Nếu là thường quy hoặc không có ngày -> Hiển thị nhãn Thường quy
                  dlHtml = '<span class="badge bg-light text-secondary border">🔄 Thường quy</span>';
             } else {
-                // Nếu có ngày -> Hiển thị ngày
                 dlHtml = dlDisp;
                 if (r[9] && r[9] !== r[4]) dlHtml = `<span class="deadline-original">${new Date(r[4]).toLocaleDateString('vi-VN')}</span><br><span class="deadline-extended">↳ ${dlDisp}</span>`;
                 if (isOverdue) dlHtml = `<span class="text-danger fw-bold">⚠️ ${dlHtml}</span>`;
@@ -766,8 +776,8 @@
 
             let groupBadge = group ? `<span class="badge bg-secondary mb-1" style="font-size:0.7em">${group}</span>` : '';
             
-            // Xử lý hiển thị độ khó
-            let diffHtml = '';
+            // Xử lý hiển thị độ khó (HIỂN THỊ CỘT RIÊNG)
+            let diffHtml = '<span class="text-muted small">-</span>';
             if(difficulty) {
                 if(difficulty == '1') diffHtml = '<span class="badge-diff diff-easy">⭐ Dễ</span>';
                 else if(difficulty == '2') diffHtml = '<span class="badge-diff diff-medium">⭐⭐ TB</span>';
@@ -778,10 +788,11 @@
             tb.innerHTML += `
             <tr class="${isOverdue ? 'table-danger' : ''}">
                 <td>
-                    ${groupBadge} ${diffHtml} <br>
+                    ${groupBadge}
                     <span class="fw-bold text-dark">${name}</span>
                     <div class="text-muted small mt-1"><em>${r[5] || ''}</em></div>
                 </td>
+                <td class="text-center">${diffHtml}</td>
                 <td>${slider}</td>
                 <td><small class="fw-bold text-primary">${assignee}</small></td>
                 <td class="small">${dlHtml}</td>
