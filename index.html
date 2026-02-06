@@ -3,582 +3,800 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Khoa Dược - Pro (AI Integrated)</title>
+    <title>Khoa Dược Dashboard - Premium</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Libraries -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <style>
         :root {
-            --primary-color: #0f9d58;
-            --secondary-color: #e8f5e9;
-            --text-dark: #2c3e50;
-            --bg-body: #f8f9fa;
+            --primary: #059669;    /* Emerald 600 */
+            --primary-light: #10b981;
+            --primary-bg: #ecfdf5;
+            --secondary: #64748b;
+            --bg-body: #f8fafc;    /* Slate 50 */
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --sidebar-width: 280px;
             --card-radius: 16px;
-            --transition: all 0.3s ease;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
             background-color: var(--bg-body);
-            font-family: 'Inter', sans-serif;
-            color: var(--text-dark);
-            font-size: 0.9rem;
+            font-family: 'Manrope', sans-serif;
+            color: var(--text-main);
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
         }
 
-        .header-section {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0 0 var(--card-radius) var(--card-radius);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        /* --- Scrollbar Custom --- */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* --- Layout --- */
+        .wrapper { display: flex; width: 100%; align-items: stretch; }
+        
+        /* Sidebar Styling */
+        #sidebar {
+            min-width: var(--sidebar-width);
+            max-width: var(--sidebar-width);
+            background: var(--surface);
+            height: 100vh;
+            position: fixed;
+            z-index: 100;
+            border-right: 1px dashed #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .brand-logo {
+            display: flex; align-items: center; gap: 12px;
+            padding-bottom: 30px;
+            border-bottom: 1px dashed #e2e8f0;
             margin-bottom: 20px;
         }
+        
+        .brand-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+        }
 
-        .nav-pills {
-            background: #f1f3f4;
-            padding: 5px;
+        #sidebar ul.components { flex: 1; list-style: none; padding: 0; margin: 0; }
+        #sidebar ul li { margin-bottom: 8px; }
+        
+        #sidebar ul li a {
+            padding: 14px 16px;
+            font-size: 0.95rem;
+            display: flex; align-items: center; gap: 12px;
+            color: var(--text-light);
+            text-decoration: none;
             border-radius: 12px;
-            display: inline-flex;
-            width: 100%;
-        }
-
-        .nav-pills .nav-item { flex: 1; }
-
-        .nav-pills .nav-link {
-            color: #5f6368;
-            border-radius: 8px;
             font-weight: 600;
-            padding: 10px 15px;
             transition: var(--transition);
         }
 
-        .nav-pills .nav-link.active {
-            background-color: white;
-            color: var(--primary-color);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        #sidebar ul li a:hover {
+            background: #f1f5f9; color: var(--text-main);
         }
 
-        .nav-pills .nav-link:hover:not(.active) {
-            background-color: rgba(0, 0, 0, 0.05);
+        #sidebar ul li a.active {
+            background: var(--primary-bg);
+            color: var(--primary);
+        }
+        
+        /* User Profile in Sidebar */
+        .user-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            margin-top: auto;
         }
 
-        .card-custom {
-            border: none;
+        /* --- Content Area --- */
+        #content {
+            width: 100%; margin-left: var(--sidebar-width);
+            min-height: 100vh; transition: var(--transition);
+        }
+
+        .main-header {
+            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 99;
+        }
+
+        .content-body { padding: 30px 40px; }
+
+        /* --- Modern Cards --- */
+        .card-modern {
+            background: var(--surface);
             border-radius: var(--card-radius);
-            background: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            transition: var(--transition);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            margin-bottom: 24px;
             overflow: hidden;
+            transition: var(--transition);
         }
-
-        .card-custom:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        .card-modern:hover {
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025);
             transform: translateY(-2px);
         }
 
-        .card-header-custom {
-            background: var(--secondary-color);
-            padding: 15px 20px;
+        .card-header-modern {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f1f5f9;
             font-weight: 700;
-            color: var(--primary-color);
-            border-bottom: 1px solid rgba(15, 157, 88, 0.1);
+            color: var(--text-main);
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        .table-custom thead th {
-            background-color: #f1f3f4;
-            color: #444;
-            font-weight: 600;
-            border: none;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            padding: 12px;
-        }
-
-        .table-custom tbody td {
-            padding: 12px;
-            vertical-align: middle;
-        }
-
-        .table-hover tbody tr:hover { background-color: #f8fff9; }
-
-        .badge-status {
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.75rem;
-        }
-
-        .bg-todo { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .bg-doing { background-color: #cff4fc; color: #055160; border: 1px solid #b6effb; }
-        .bg-done { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
-        .bg-overdue { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
-        .bg-waiting { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
-
-        .badge-diff {
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid transparent;
-            margin-right: 4px;
-        }
-
-        .diff-easy { color: #198754; background: #d1e7dd; border-color: #a3cfbb; }
-        .diff-medium { color: #fd7e14; background: #ffe5d0; border-color: #fecba1; }
-        .diff-hard { color: #dc3545; background: #f8d7da; border-color: #f5c2c7; }
-        .diff-complex { color: #6610f2; background: #e0cffc; border-color: #bda5f9; }
-
-        .form-control, .form-select {
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-            padding: 10px 12px;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(15, 157, 88, 0.25);
-        }
-
-        #calendar {
+        /* --- Stat Cards --- */
+        .stat-card {
             background: white;
-            padding: 15px;
             border-radius: var(--card-radius);
+            padding: 24px;
+            display: flex; align-items: center; gap: 15px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            transition: var(--transition);
+            height: 100%;
         }
-
-        .fc-event {
-            border: none !important;
-            border-radius: 4px !important;
-            padding: 2px 4px !important;
-            font-size: 0.8rem !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        
+        .stat-icon-wrapper {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
         }
-
-        .fc-day-today { background-color: #f0fdf4 !important; }
-
-        .fc-toolbar-title {
-            font-size: 1.2rem !important;
+        
+        /* --- Table Styling --- */
+        .table-responsive { border-radius: var(--card-radius); }
+        .table-modern { width: 100%; border-collapse: separate; border-spacing: 0; }
+        
+        .table-modern thead th {
+            background: #f8fafc;
+            color: #64748b;
             font-weight: 700;
-            color: var(--primary-color);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .table-modern tbody td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            background: white;
+            color: #334155;
+            font-size: 0.9rem;
+        }
+        
+        .table-modern tbody tr:last-child td { border-bottom: none; }
+        .table-modern tbody tr:hover td { background: #f8fafc; }
+
+        /* --- Badges & Elements --- */
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .bg-done { background: #dcfce7; color: #166534; }
+        .bg-doing { background: #dbeafe; color: #1e40af; }
+        .bg-waiting { background: #f1f5f9; color: #475569; }
+        .bg-overdue { background: #fee2e2; color: #991b1b; }
+        .bg-todo { background: #ffedd5; color: #9a3412; }
+
+        /* Form Controls */
+        .form-control, .form-select {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         }
 
-        .fc-button-primary {
-            background-color: var(--primary-color) !important;
-            border-color: var(--primary-color) !important;
+        /* Buttons */
+        .btn-primary-custom {
+            background: var(--primary);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            color: white; font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            transition: var(--transition);
         }
+        .btn-primary-custom:hover { background: #047857; transform: translateY(-1px); }
 
-        .admin-only, .logged-only { display: none !important; }
-        .deadline-extended { color: #6f42c1; font-weight: 700; }
-        .deadline-original { text-decoration: line-through; color: #aaa; font-size: 0.8em; }
-
-        .person-item {
-            padding: 8px 12px;
-            border-bottom: 1px solid #eee;
+        /* --- Notifications Dropdown --- */
+        .notification-dropdown {
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .noti-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
             cursor: pointer;
-            display: flex;
-            align-items: center;
+        }
+        .noti-item:hover { background: #f8fafc; }
+        .noti-item.unread { background: #ecfdf5; }
+        .noti-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
         }
 
-        .person-item:hover { background-color: #f5f5f5; }
-        .person-item input { margin-right: 10px; transform: scale(1.1); }
-        .dropdown-menu-custom { max-height: 250px; overflow-y: auto; padding: 0; }
-        .btn-action-group .btn { margin-right: 4px; margin-bottom: 4px; }
-
+        /* Chat Widget */
         .chat-btn {
             position: fixed; bottom: 30px; right: 30px;
             width: 60px; height: 60px;
-            border-radius: 50%; background: linear-gradient(135deg, #0f9d58, #0b7a43);
-            color: white; border: none; font-size: 28px;
-            box-shadow: 0 4px 15px rgba(15, 157, 88, 0.4); z-index: 1000;
-            transition: transform 0.3s; cursor: pointer;
+            border-radius: 20px; 
+            background: var(--primary);
+            color: white; border: none; font-size: 24px;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4); 
+            z-index: 1000; transition: var(--transition);
             display: flex; align-items: center; justify-content: center;
         }
-        .chat-btn:hover { transform: scale(1.1); }
+        .chat-btn:hover { transform: scale(1.1) rotate(5deg); }
         
         .chat-box {
             position: fixed; bottom: 100px; right: 30px;
-            width: 360px; height: 500px;
-            background: white; border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 380px; height: 550px;
+            background: white; border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
             display: none; flex-direction: column; z-index: 1000;
-            overflow: hidden; border: 1px solid #eee;
-            animation: slideUp 0.3s ease-out;
+            overflow: hidden; border: 1px solid #e2e8f0;
         }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .chat-header { 
-            background: linear-gradient(135deg, #0f9d58, #0b7a43); 
-            color: white; padding: 15px 20px; 
-            font-weight: 700; display: flex; justify-content: space-between; align-items: center; 
+        /* Responsive */
+        @media (max-width: 991px) {
+            #sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            #sidebar.active { transform: translateX(0); box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+            #content { margin-left: 0; }
+            .content-body { padding: 20px; }
+            .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; backdrop-filter: blur(2px); }
+            .overlay.active { display: block; }
         }
-        .chat-body { 
-            flex: 1; padding: 15px; overflow-y: auto; 
-            background: #f9f9f9; font-size: 0.9rem; scroll-behavior: smooth;
-        }
-        .chat-footer { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white; }
         
-        .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 85%; line-height: 1.4; word-wrap: break-word; }
-        .msg-user { background: #d1e7dd; color: #0f5132; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; }
-        .msg-ai { background: white; border: 1px solid #e0e0e0; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .typing { font-style: italic; color: #888; font-size: 0.8rem; margin-bottom: 10px; display: none; margin-left: 10px; }
-        
-        @media (max-width: 576px) {
-            .chat-box { width: 90%; right: 5%; bottom: 90px; height: 60vh; }
-        }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .admin-only { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container-xxl py-3">
-    <div class="header-section d-flex flex-wrap justify-content-between align-items-center">
-        <div class="d-flex align-items-center mb-2 mb-md-0">
-            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; font-size: 24px;">🏥</div>
+<div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="brand-logo">
+            <div class="brand-icon"><i class="bi bi-hospital-fill"></i></div>
             <div>
-                <h4 class="fw-bold m-0" style="color: var(--primary-color);">KHOA DƯỢC</h4>
-                <small class="text-muted">Hệ thống Quản lý Công việc & AI Lily</small>
+                <h5 class="m-0 fw-bold" style="color: #0f172a;">KHOA DƯỢC</h5>
+                <small class="text-muted fw-semibold">Pro Dashboard</small>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <span id="userDisplay" class="fw-bold text-dark bg-light px-3 py-2 rounded-pill border"></span>
-            <button class="btn btn-outline-secondary btn-sm d-none" id="btnChangePin" onclick="showChangePinModal()">🔐 Đổi PIN</button>
-            <button class="btn btn-primary btn-sm px-3 rounded-pill fw-bold" id="btnLogin" onclick="showLoginModal()">👤 Đăng nhập</button>
-            <button class="btn btn-outline-danger btn-sm px-3 rounded-pill d-none" id="btnLogout" onclick="logout()">🚪 Thoát</button>
-        </div>
-    </div>
 
-    <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-list" onclick="loadTaskList()">
-                📋 Danh sách
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-report" onclick="loadDashboard()">
-                📊 Báo cáo & Lịch
-            </button>
-        </li>
-        <li class="nav-item admin-only" role="presentation">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-input">
-                📝 Giao việc
-            </button>
-        </li>
-        <li class="nav-item admin-only" role="presentation">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-compliance">
-                ⚖️ Nội quy
-            </button>
-        </li>
-    </ul>
+        <ul class="components">
+            <li>
+                <a href="#" class="nav-link-custom active" onclick="switchTab('pills-list', this)">
+                    <i class="bi bi-list-check"></i> Công việc
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link-custom" onclick="switchTab('pills-report', this); loadDashboard();">
+                    <i class="bi bi-graph-up-arrow"></i> Báo cáo & Lịch
+                </a>
+            </li>
+            <li class="admin-only">
+                <a href="#" class="nav-link-custom" onclick="switchTab('pills-input', this)">
+                    <i class="bi bi-plus-circle-dotted"></i> Giao việc mới
+                </a>
+            </li>
+            <li class="admin-only">
+                <a href="#" class="nav-link-custom" onclick="switchTab('pills-compliance', this)">
+                    <i class="bi bi-shield-check"></i> Nội quy
+                </a>
+            </li>
+        </ul>
 
-    <div class="tab-content" id="pills-tabContent">
-        
-        <div class="tab-pane fade show active" id="pills-list">
-            <div class="card card-custom p-3 mb-3">
-                <div class="row g-2 align-items-center">
-                    <div class="col-md-2">
-                        <label class="small text-muted fw-bold">Bộ phận</label>
-                        <select id="filterGroup" class="form-select form-select-sm" onchange="renderTable()"></select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="small text-muted fw-bold">Nhân sự</label>
-                        <select id="filterAssignee" class="form-select form-select-sm" onchange="renderTable()"></select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="small text-muted fw-bold">Độ khó</label>
-                        <select id="filterDifficulty" class="form-select form-select-sm" onchange="renderTable()">
-                            <option value="">Tất cả</option>
-                            <option value="1">⭐ Dễ</option>
-                            <option value="2">⭐⭐ Trung bình</option>
-                            <option value="3">⭐⭐⭐ Khó</option>
-                            <option value="4">⭐⭐⭐⭐ Phức tạp</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="small text-muted fw-bold">Trạng thái</label>
-                        <select id="filterStatus" class="form-select form-select-sm" onchange="renderTable()">
-                            <option value="">Tất cả</option>
-                            <option value="Pending">⏳ Chưa hoàn thành</option>
-                            <option value="Waiting">✋ Chờ duyệt</option>
-                            <option value="Done">✅ Đã hoàn thành</option>
-                            <option value="Overdue">🔥 Quá hạn</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="small text-muted fw-bold">Tìm kiếm</label>
-                        <input type="text" id="filterText" class="form-control form-control-sm" placeholder="Tên công việc..." onkeyup="renderTable()">
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end gap-1">
-                        <button class="btn btn-warning btn-sm w-100 fw-bold text-dark admin-only" onclick="triggerBulkEmail()" title="Gửi mail nhắc việc chưa xong">📨 Nhắc All</button>
-                        <button class="btn btn-light border btn-sm" onclick="loadTaskList()" title="Tải lại"><span style="font-size: 1.2em;">🔄</span></button>
-                    </div>
+        <div class="user-card mt-auto">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="avatar" style="width: 40px; height: 40px; background: #e2e8f0; color: #64748b; font-size: 16px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div style="overflow: hidden;">
+                    <div id="userDisplay" class="fw-bold text-dark text-truncate">Khách</div>
+                    <small class="text-success d-flex align-items-center gap-1"><span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></span> Online</small>
                 </div>
             </div>
-            <div class="card card-custom">
-                <div class="table-responsive">
-                    <table class="table table-hover table-custom mb-0">
-                        <thead>
-                            <tr>
-                                <th width="30%">Công việc / Tổ</th>
-                                <th width="10%" class="text-center">Độ khó</th>
-                                <th width="15%">Tiến độ</th>
-                                <th width="15%">Người thực hiện</th>
-                                <th width="12%">Deadline</th>
-                                <th width="10%">Trạng thái</th>
-                                <th width="8%" class="text-center">Tác vụ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="taskTableBody"></tbody>
-                    </table>
+            <div class="row g-2">
+                <div class="col-6">
+                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="showChangePinModal()" id="btnChangePin" style="display:none">Đổi PIN</button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-sm btn-outline-danger w-100" onclick="logout()" id="btnLogout" style="display:none">Thoát</button>
+                    <button class="btn btn-sm btn-primary w-100" onclick="showLoginModal()" id="btnLogin">Login</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Page Content -->
+    <div id="content">
+        <div class="main-header">
+            <div class="d-flex align-items-center gap-3">
+                <button type="button" id="sidebarCollapse" class="btn btn-light d-lg-none shadow-sm border" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h4 class="m-0 fw-bold" id="pageTitle" style="color: #334155;">Danh sách công việc</h4>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-group d-none d-md-flex" style="width: 280px;">
+                    <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 10px 0 0 10px;"><i class="bi bi-search"></i></span>
+                    <input type="text" id="globalSearch" class="form-control border-start-0" style="border-radius: 0 10px 10px 0;" placeholder="Tìm kiếm nhanh..." onkeyup="syncSearch(this.value)">
+                </div>
+                
+                <!-- Notification Bell -->
+                <div class="dropdown">
+                    <div class="position-relative cursor-pointer p-2" data-bs-toggle="dropdown" aria-expanded="false" onclick="markAllRead()">
+                        <i class="bi bi-bell-fill fs-5 text-secondary"></i>
+                        <span id="notiBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light shadow-sm" style="display:none;">0</span>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown p-0">
+                        <li class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+                            <span class="fw-bold text-dark">Thông báo</span>
+                            <small class="text-primary cursor-pointer" onclick="refreshNotifications()">Làm mới</small>
+                        </li>
+                        <div id="notificationList">
+                            <li class="p-4 text-center text-muted small">Không có thông báo mới</li>
+                        </div>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <div class="tab-pane fade" id="pills-report">
-            <div class="card card-custom p-3 mb-4 bg-white border-start border-5 border-success">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="fw-bold text-success fs-5">📅 BÁO CÁO THÁNG:</span>
-                        <input type="month" id="reportMonthSelect" class="form-control form-control-lg" style="width: auto;" onchange="updateReport()">
-                    </div>
-                    <button class="btn btn-success fw-bold shadow-sm px-4" onclick="exportExcelReport()">📥 Xuất Excel</button>
-                </div>
-            </div>
-            <div class="row g-4 mb-4">
-                <div class="col-md-6 col-lg-3">
-                    <div class="card card-custom h-100">
-                        <div class="card-header-custom text-center">📊 Tình trạng chung</div>
-                        <div class="card-body p-0 d-flex justify-content-center align-items-center">
-                            <div id="piechart_task" style="width: 100%; height: 250px;"></div>
+        <div class="content-body">
+            <!-- Tab Content -->
+            <div id="pills-list" class="tab-pane-custom fade-in">
+                <!-- Filter Section -->
+                <div class="card-modern">
+                    <div class="card-body p-4">
+                        <div class="row g-2">
+                            <!-- ADDED: Month Filter -->
+                            <div class="col-md-2">
+                                <label class="small text-muted fw-bold mb-1">Tháng (Trống=All)</label>
+                                <div class="input-group">
+                                    <input type="month" id="filterMonth" class="form-control form-control-sm" onchange="renderTable()" style="border-right:0;">
+                                    <button class="btn btn-outline-secondary btn-sm border-start-0" type="button" onclick="document.getElementById('filterMonth').value=''; renderTable();" title="Xem tất cả" style="background:white; border-color:#e2e8f0;">✕</button>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="small text-muted fw-bold mb-1">Tổ/Bộ phận</label>
+                                <select id="filterGroup" class="form-select form-select-sm" onchange="renderTable()"></select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="small text-muted fw-bold mb-1">Nhân sự</label>
+                                <select id="filterAssignee" class="form-select form-select-sm" onchange="renderTable()"></select>
+                            </div>
+                            <!-- Reduced width for Difficulty -->
+                            <div class="col-md-1">
+                                <label class="small text-muted fw-bold mb-1">Độ khó</label>
+                                <select id="filterDifficulty" class="form-select form-select-sm" onchange="renderTable()">
+                                    <option value="">All</option>
+                                    <option value="1">1⭐</option>
+                                    <option value="2">2⭐</option>
+                                    <option value="3">3⭐</option>
+                                    <option value="4">4⭐</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="small text-muted fw-bold mb-1">Trạng thái</label>
+                                <select id="filterStatus" class="form-select form-select-sm" onchange="renderTable()">
+                                    <option value="">Tất cả</option>
+                                    <option value="NoRoutine">⚡ Bỏ thường quy</option>
+                                    <option value="Pending">⏳ Chưa hoàn thành</option>
+                                    <option value="Waiting">✋ Chờ duyệt</option>
+                                    <option value="Done">✅ Đã hoàn thành</option>
+                                    <option value="Overdue">🔥 Quá hạn</option>
+                                </select>
+                            </div>
+                             <div class="col-md-2">
+                                <label class="small text-muted fw-bold mb-1">Tên việc</label>
+                                <input type="text" id="filterText" class="form-control form-control-sm" placeholder="..." onkeyup="renderTable()">
+                            </div>
+                            <!-- Reduced width for Buttons -->
+                            <div class="col-md-1 d-flex align-items-end gap-1">
+                                <button class="btn btn-warning btn-sm w-100 text-white fw-bold admin-only p-2" onclick="triggerBulkEmail()" title="Gửi mail nhắc" style="border-radius: 8px;"><i class="bi bi-envelope"></i></button>
+                                <button class="btn btn-white btn-sm border w-100 p-2" onclick="loadTaskList()" style="border-radius: 8px;"><i class="bi bi-arrow-clockwise"></i></button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="card card-custom h-100">
-                        <div class="card-header-custom text-center">🧩 Phân bố Độ khó</div>
-                        <div class="card-body p-0 d-flex justify-content-center align-items-center">
-                            <div id="piechart_difficulty" style="width: 100%; height: 250px;"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 col-lg-6">
-                    <div class="card card-custom h-100">
-                        <div class="card-header-custom text-center">📈 Chi tiết nhân sự</div>
-                        <div class="card-body p-0">
-                            <div id="barchart_task" style="width: 100%; height: 250px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row g-4 mb-4">
-                <div class="col-md-6">
-                    <div class="card card-custom h-100 border-start border-4 border-danger">
-                        <div class="p-2 text-center text-danger fw-bold bg-light">⚠️ Vi phạm</div>
-                        <div class="card-body p-0">
-                            <div id="columnchart_violation" style="width: 100%; height: 220px;"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card card-custom h-100 border-start border-4 border-warning">
-                        <div class="p-2 text-center text-warning fw-bold bg-light">🏆 Khen thưởng</div>
-                        <div class="card-body p-0">
-                            <div id="columnchart_reward" style="width: 100%; height: 220px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card card-custom p-1">
-                <div class="card-header-custom bg-white text-dark d-flex justify-content-between align-items-center">
-                    <span>📅 LỊCH CÔNG TÁC & DEADLINE</span>
-                    <div class="d-flex gap-2 small">
-                        <span class="badge bg-success">Đã xong</span>
-                        <span class="badge bg-danger">Quá hạn</span>
-                        <span class="badge bg-primary">Sắp tới</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="calendar"></div>
-                </div>
-            </div>
-        </div>
 
-        <div class="tab-pane fade" id="pills-input">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card card-custom">
-                        <div class="card-header-custom">📝 THÊM CÔNG VIỆC MỚI</div>
-                        <div class="card-body p-4">
-                            <form id="taskForm">
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">Tên công việc <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="taskName" required placeholder="Nhập tên đầu việc...">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">Người thực hiện</label>
-                                    <select name="assignee" id="hiddenAssigneeSelect" multiple style="display:none"></select>
-                                    <div class="dropdown">
-                                        <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center bg-white py-2" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                                            <span id="selectedText" class="text-dark">-- Chọn nhân sự --</span>
-                                            <span class="badge bg-success rounded-pill" id="selectedCount">0</span>
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-custom shadow w-100" id="checkboxContainer"></div>
-                                    </div>
-                                </div>
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold">Thuộc Tổ/Bộ phận</label>
-                                        <select class="form-select" name="group" id="groupSelect"></select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold">Phân loại</label>
-                                        <select class="form-select" name="taskType" id="taskTypeSelect" onchange="toggleDeadline()">
-                                            <option value="Thường quy" selected>🟦 Thường quy (Không gấp)</option>
-                                            <option value="Có hạn">🟥 Có Deadline (Quan trọng)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Mức độ Ưu tiên</label>
-                                        <select class="form-select" name="priority">
-                                            <option value="P1">🔴 Cao (Khẩn cấp)</option>
-                                            <option value="P2" selected>🟡 Trung bình</option>
-                                            <option value="P3">🟢 Thấp</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Độ khó</label>
-                                        <select class="form-select" name="difficulty">
-                                            <option value="1">⭐ Dễ</option>
-                                            <option value="2" selected>⭐⭐ Trung bình</option>
-                                            <option value="3">⭐⭐⭐ Khó</option>
-                                            <option value="4">⭐⭐⭐⭐ Phức tạp</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold">Hạn chót (Deadline)</label>
-                                        <input type="date" class="form-control" name="deadline" id="deadlineInput">
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">Ghi chú / Mô tả</label>
-                                    <textarea class="form-control" name="notes" rows="3" placeholder="Chi tiết yêu cầu..."></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm" id="submitBtn">💾 LƯU CÔNG VIỆC</button>
-                            </form>
-                        </div>
+                <!-- Table Section -->
+                <div class="card-modern">
+                    <div class="table-responsive">
+                        <table class="table-modern">
+                            <thead>
+                                <tr>
+                                    <th width="32%">Công việc</th>
+                                    <th width="8%" class="text-center">Độ khó</th>
+                                    <th width="15%">Tiến độ</th>
+                                    <th width="15%">Người thực hiện</th>
+                                    <th width="12%">Deadline</th>
+                                    <th width="10%">Trạng thái</th>
+                                    <th width="8%" class="text-center">Tác vụ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="tab-pane fade" id="pills-compliance">
-             <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card card-custom h-100 border-0">
-                        <div class="card-header bg-danger text-white fw-bold text-center">⚖️ Ghi nhận Vi phạm/Khen</div>
-                        <div class="card-body">
-                            <form id="complianceForm">
-                                <div class="mb-3">
-                                    <label class="fw-bold small mb-1">Nhân viên</label>
-                                    <select class="form-select" name="person" id="compliancePerson" required></select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="fw-bold small mb-1">Loại hình</label>
-                                    <select class="form-select" name="type" required>
-                                        <option value="Vi phạm">⚠️ Vi phạm</option>
-                                        <option value="Khen thưởng">🏆 Khen thưởng</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="fw-bold small mb-1">Nội dung chi tiết</label>
-                                    <textarea class="form-control" name="fault" rows="4" required placeholder="Mô tả lỗi hoặc thành tích..."></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="fw-bold small mb-1">Ghi chú thêm</label>
-                                    <input type="text" class="form-control" name="note">
-                                </div>
-                                <button type="submit" class="btn btn-danger w-100 mt-2" id="btnCompliance">Lưu ghi nhận</button>
-                            </form>
+            <div id="pills-report" class="tab-pane-custom d-none fade-in">
+                 <!-- Stats Row: Updated to 5 cards with Split Doing Status -->
+                 <div class="row g-3 mb-4 row-cols-2 row-cols-md-5">
+                    <div class="col">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper" style="background: #eff6ff; color: #3b82f6;">
+                                <i class="bi bi-briefcase-fill"></i>
+                            </div>
+                            <div>
+                                <h3 class="m-0 fw-bold" id="stat-total" style="color: #1e293b;">0</h3>
+                                <span class="text-muted small fw-bold">Tổng</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper" style="background: #ecfdf5; color: #10b981;">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div>
+                                <h3 class="m-0 fw-bold" id="stat-done" style="color: #1e293b;">0</h3>
+                                <span class="text-muted small fw-bold">Xong</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Split Doing into 2 cards -->
+                    <div class="col">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper" style="background: #fff7ed; color: #f97316;">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                            <div>
+                                <h3 class="m-0 fw-bold" id="stat-doing-deadline" style="color: #1e293b;">0</h3>
+                                <span class="text-muted small fw-bold">Có hạn</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper" style="background: #f3f4f6; color: #4b5563;">
+                                <i class="bi bi-infinity"></i>
+                            </div>
+                            <div>
+                                <h3 class="m-0 fw-bold" id="stat-doing-routine" style="color: #1e293b;">0</h3>
+                                <span class="text-muted small fw-bold">Thường quy</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper" style="background: #fef2f2; color: #ef4444;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                            <div>
+                                <h3 class="m-0 fw-bold" id="stat-overdue" style="color: #1e293b;">0</h3>
+                                <span class="text-muted small fw-bold">Quá hạn</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-8">
-                    <div class="card card-custom h-100">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                            <h6 class="fw-bold text-secondary m-0">📜 Lịch sử Ghi nhận</h6>
-                            <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="loadCompliance()">🔄 Tải lại</button>
+
+                <div class="card-modern mb-4">
+                    <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="fw-bold text-dark"><i class="bi bi-calendar-month text-primary me-2"></i>Chọn tháng:</span>
+                            <input type="month" id="reportMonthSelect" class="form-control" style="width: auto; background: white;" onchange="updateReport()">
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive" style="max-height: 500px;">
-                                <table class="table table-striped mb-0 table-custom">
-                                    <thead class="sticky-top bg-light">
-                                        <tr>
-                                            <th>Ngày</th>
-                                            <th>Nhân viên</th>
-                                            <th>Loại</th>
-                                            <th>Nội dung</th>
-                                            <th>Ghi chú</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="complianceBody"></tbody>
-                                </table>
+                        <button class="btn btn-success fw-bold px-4" style="border-radius: 10px;" onclick="exportExcelReport()"><i class="bi bi-file-earmark-spreadsheet-fill me-2"></i>Xuất Excel</button>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card-modern h-100">
+                            <div class="card-header-modern">Tình trạng chung</div>
+                            <div class="card-body p-0 d-flex justify-content-center">
+                                <div id="piechart_task" style="width: 100%; height: 250px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card-modern h-100">
+                            <div class="card-header-modern">Phân bố Độ khó</div>
+                            <div class="card-body p-0 d-flex justify-content-center">
+                                <div id="piechart_difficulty" style="width: 100%; height: 250px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-6">
+                        <div class="card-modern h-100">
+                            <div class="card-header-modern">Chi tiết nhân sự</div>
+                            <div class="card-body p-0">
+                                <div id="barchart_task" style="width: 100%; height: 250px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                         <div class="card-modern h-100">
+                            <div class="card-header-modern text-danger"><i class="bi bi-exclamation-octagon-fill me-2"></i>Ghi nhận Vi phạm</div>
+                            <div class="card-body p-0">
+                                <div id="columnchart_violation" style="width: 100%; height: 220px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-md-6">
+                         <div class="card-modern h-100">
+                            <div class="card-header-modern text-warning"><i class="bi bi-trophy-fill me-2"></i>Khen thưởng</div>
+                            <div class="card-body p-0">
+                                <div id="columnchart_reward" style="width: 100%; height: 220px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-modern">
+                    <div class="card-header-modern">
+                        <div><i class="bi bi-calendar-week-fill me-2 text-primary"></i>LỊCH CÔNG TÁC</div>
+                        <div class="d-flex gap-2 small">
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success">Đã xong</span>
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Quá hạn</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">Sắp tới</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-3">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pills-input" class="tab-pane-custom d-none fade-in">
+                 <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card-modern">
+                            <div class="card-header-modern bg-light border-bottom">
+                                <span><i class="bi bi-pencil-square me-2 text-primary"></i>THÊM CÔNG VIỆC MỚI</span>
+                            </div>
+                            <div class="card-body p-4">
+                                <form id="taskForm">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold small text-muted">Tên công việc <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-lg" name="taskName" required placeholder="Nhập tên đầu việc...">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold small text-muted">Người thực hiện</label>
+                                        <select name="assignee" id="hiddenAssigneeSelect" multiple style="display:none"></select>
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center bg-white py-2" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="border-radius: 10px;">
+                                                <span id="selectedText" class="text-dark">-- Chọn nhân sự --</span>
+                                                <span class="badge bg-success rounded-pill" id="selectedCount">0</span>
+                                            </button>
+                                            <div class="dropdown-menu shadow-lg w-100 p-2 border-0" id="checkboxContainer" style="border-radius: 12px; max-height: 300px; overflow-y:auto;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold small text-muted">Thuộc Tổ/Bộ phận</label>
+                                            <select class="form-select" name="group" id="groupSelect"></select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold small text-muted">Phân loại</label>
+                                            <select class="form-select" name="taskType" id="taskTypeSelect" onchange="toggleDeadline()">
+                                                <option value="Thường quy" selected>🟦 Thường quy (Không gấp)</option>
+                                                <option value="Có hạn">🟥 Có Deadline (Quan trọng)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold small text-muted">Mức độ Ưu tiên</label>
+                                            <select class="form-select" name="priority">
+                                                <option value="P1">🔴 Cao (Khẩn cấp)</option>
+                                                <option value="P2" selected>🟡 Trung bình</option>
+                                                <option value="P3">🟢 Thấp</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold small text-muted">Độ khó</label>
+                                            <select class="form-select" name="difficulty">
+                                                <option value="1">⭐ Dễ</option>
+                                                <option value="2" selected>⭐⭐ Trung bình</option>
+                                                <option value="3">⭐⭐⭐ Khó</option>
+                                                <option value="4">⭐⭐⭐⭐ Phức tạp</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold small text-muted">Hạn chót (Deadline)</label>
+                                            <input type="date" class="form-control" name="deadline" id="deadlineInput">
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold small text-muted">Ghi chú / Mô tả</label>
+                                        <textarea class="form-control" name="notes" rows="3" placeholder="Chi tiết yêu cầu..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary-custom w-100 py-3" id="submitBtn">LƯU CÔNG VIỆC</button>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+             <div id="pills-compliance" class="tab-pane-custom d-none fade-in">
+                 <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card-modern h-100">
+                            <div class="card-header-modern bg-danger text-white">⚖️ Ghi nhận Vi phạm/Khen</div>
+                            <div class="card-body">
+                                <form id="complianceForm">
+                                    <div class="mb-3">
+                                        <label class="fw-bold small mb-1 text-muted">Nhân viên</label>
+                                        <select class="form-select" name="person" id="compliancePerson" required></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="fw-bold small mb-1 text-muted">Loại hình</label>
+                                        <select class="form-select" name="type" required>
+                                            <option value="Vi phạm">⚠️ Vi phạm</option>
+                                            <option value="Khen thưởng">🏆 Khen thưởng</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="fw-bold small mb-1 text-muted">Nội dung chi tiết</label>
+                                        <textarea class="form-control" name="fault" rows="4" required placeholder="Mô tả lỗi hoặc thành tích..."></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="fw-bold small mb-1 text-muted">Ghi chú thêm</label>
+                                        <input type="text" class="form-control" name="note">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger w-100 mt-2" id="btnCompliance" style="border-radius: 10px;">Lưu ghi nhận</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-modern h-100">
+                            <div class="card-header-modern">
+                                <span>📜 Lịch sử Ghi nhận</span>
+                                <button class="btn btn-sm btn-white border rounded-pill" onclick="loadCompliance()"><i class="bi bi-arrow-repeat"></i> Refresh</button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 500px;">
+                                    <table class="table-modern">
+                                        <thead class="sticky-top bg-light">
+                                            <tr>
+                                                <th>Ngày</th>
+                                                <th>Nhân viên</th>
+                                                <th>Loại</th>
+                                                <th>Nội dung</th>
+                                                <th>Ghi chú</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="complianceBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
-<button class="chat-btn" onclick="toggleChat()" title="Chat với Lily AI">💬</button>
+<!-- Chat Bot -->
+<button class="chat-btn" onclick="toggleChat()" title="Chat với Lily AI"><i class="bi bi-chat-text-fill"></i></button>
 
 <div class="chat-box" id="chatBox">
-    <div class="chat-header">
-        <span>🤖 Lily AI Assistant</span>
+    <div class="chat-header" style="background: var(--primary); color: white; padding: 16px 20px; display:flex; justify-content:space-between; align-items:center;">
+        <div class="d-flex align-items-center gap-2">
+            <div style="width: 32px; height: 32px; background: white; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: var(--primary);">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div>
+                <div class="fw-bold" style="font-size: 0.95rem;">Lily AI</div>
+                <div style="font-size: 0.75rem; opacity: 0.9;">Trợ lý ảo Dược</div>
+            </div>
+        </div>
         <button type="button" class="btn-close btn-close-white" onclick="toggleChat()"></button>
     </div>
-    <div class="chat-body" id="chatHistory">
-        <div class="msg msg-ai">Xin chào! Em là Lily. Anh/Chị cần kiểm tra tiến độ của ai ạ?</div>
+    <div class="chat-body" id="chatHistory" style="flex:1; padding: 20px; overflow-y:auto; background: #f8fafc;">
+        <div class="msg msg-ai" style="background: white; padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid #e2e8f0; max-width: 85%; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            Xin chào! Em là Lily. Anh/Chị cần kiểm tra tiến độ của ai ạ?
+        </div>
     </div>
-    <div class="typing" id="typingIndicator">Lily đang nhập...</div>
-    <div class="chat-footer">
-        <input type="text" id="chatInput" class="form-control rounded-pill border-0 bg-light" placeholder="Nhập tin nhắn..." onkeypress="handleEnter(event)">
-        <button class="btn btn-success rounded-circle" style="width: 38px; height: 38px; padding: 0;" onclick="sendMessage()">➤</button>
+    <div class="typing" id="typingIndicator" style="padding: 0 20px 10px; font-size: 0.8rem; color: #94a3b8; display:none;">Lily đang nhập...</div>
+    <div class="chat-footer" style="padding: 15px; border-top: 1px solid #e2e8f0; background: white; display:flex; gap: 10px;">
+        <input type="text" id="chatInput" class="form-control rounded-pill border bg-light" placeholder="Nhập tin nhắn..." onkeypress="handleEnter(event)">
+        <button class="btn btn-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px; background: var(--primary); border:none;" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
     </div>
 </div>
 
+<!-- Modals -->
 <div class="modal fade" id="reportModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title fw-bold">📤 Báo cáo Hoàn thành</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <input type="hidden" id="reportTaskId">
-                <div class="alert alert-info small mb-3">
-                    <i class="bi bi-info-circle"></i> Vui lòng đính kèm minh chứng. Hỗ trợ nhiều file: Ảnh, PDF, Word, Excel.
-                    <br><b>Lưu ý: Tổng dung lượng tối đa 10MB.</b>
+                <div class="alert alert-success bg-opacity-10 border-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-cloud-upload-fill text-success fs-5"></i>
+                    <small class="text-success fw-bold">Hỗ trợ: Ảnh, PDF, Word, Excel. Max 10MB.</small>
                 </div>
                 <div class="mb-3">
-                    <label class="fw-bold small mb-1">File đính kèm (Chọn nhiều file)</label>
+                    <label class="fw-bold small mb-2 text-muted">Chọn files minh chứng</label>
                     <input type="file" id="reportFile" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" onchange="displaySelectedFiles()">
-                    
                     <div id="fileListDisplay" class="small mt-2 text-primary fst-italic"></div>
-
                     <div class="form-text text-danger small" id="fileError" style="display:none"></div>
-                    <div id="uploadProgress" class="progress mt-2" style="display:none; height: 10px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 100%"></div>
+                    <div id="uploadProgress" class="progress mt-2" style="display:none; height: 6px;">
+                        <div class="progress-bar bg-success" style="width: 100%"></div>
                     </div>
                     <div class="form-text text-muted small mt-1" id="compressStatus"></div>
                 </div>
-                <div class="d-flex justify-content-end">
-                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-success fw-bold" id="btnSubmitReport" onclick="submitReport()">Gửi báo cáo</button>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal" style="border-radius: 8px;">Hủy</button>
+                    <button type="button" class="btn btn-success fw-bold px-4" id="btnSubmitReport" onclick="submitReport()" style="border-radius: 8px;">Gửi báo cáo</button>
                 </div>
             </div>
         </div>
@@ -587,7 +805,7 @@
 
 <div class="modal fade" id="editTaskModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header bg-warning text-dark">
                 <h5 class="modal-title fw-bold">✏️ Chỉnh sửa Công việc</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -596,21 +814,20 @@
                 <form id="editTaskForm">
                     <input type="hidden" id="editTaskId">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Tên công việc</label>
+                        <label class="form-label fw-bold small">Tên công việc</label>
                         <input type="text" class="form-control" id="editTaskName" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Người thực hiện (Hiện tại)</label>
-                        <input type="text" class="form-control" id="editTaskAssignee" readonly>
-                        <div class="form-text">Để thay đổi người làm, vui lòng tạo công việc mới hoặc cập nhật trong Sheet (phiên bản Web hỗ trợ sửa thông tin cơ bản).</div>
+                        <label class="form-label fw-bold small">Người thực hiện</label>
+                        <input type="text" class="form-control bg-light" id="editTaskAssignee" readonly>
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Hạn chót</label>
+                            <label class="form-label fw-bold small">Hạn chót</label>
                             <input type="date" class="form-control" id="editTaskDeadline">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Độ khó</label>
+                            <label class="form-label fw-bold small">Độ khó</label>
                             <select class="form-select" id="editTaskDifficulty">
                                 <option value="1">⭐ Dễ</option>
                                 <option value="2">⭐⭐ Trung bình</option>
@@ -620,12 +837,12 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Ghi chú</label>
+                        <label class="form-label fw-bold small">Ghi chú</label>
                         <textarea class="form-control" id="editTaskNotes" rows="3"></textarea>
                     </div>
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Hủy</button>
-                        <button type="button" class="btn btn-primary fw-bold" onclick="submitEditTask()">Lưu thay đổi</button>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal" style="border-radius: 8px;">Hủy</button>
+                        <button type="button" class="btn btn-primary fw-bold" onclick="submitEditTask()" style="border-radius: 8px;">Lưu thay đổi</button>
                     </div>
                 </form>
             </div>
@@ -635,30 +852,25 @@
 
 <div class="modal fade" id="reviewModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header bg-info text-white">
-                <h5 class="modal-title fw-bold">📋 Duyệt Báo Cáo Hoàn Thành</h5>
+                <h5 class="modal-title fw-bold">📋 Duyệt Báo Cáo</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <input type="hidden" id="reviewTaskId">
-                <div class="mb-3">
-                    <label class="fw-bold text-muted small">Công việc:</label>
-                    <div id="reviewTaskName" class="fw-bold fs-5 text-dark"></div>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold text-muted small">Người thực hiện:</label>
-                    <div id="reviewAssignee"></div>
-                </div>
-                <div class="card bg-light border-0 mb-3">
-                    <div class="card-body p-3">
-                        <label class="fw-bold text-muted small mb-2">Tài liệu minh chứng:</label>
-                        <div id="reviewFileContainer"></div>
+                <h5 id="reviewTaskName" class="fw-bold mb-1"></h5>
+                <p class="text-muted small mb-3">Thực hiện bởi: <span id="reviewAssignee" class="fw-bold text-dark"></span></p>
+                
+                <div class="card bg-light border-0 mb-4">
+                    <div class="card-body">
+                        <label class="fw-bold small text-muted mb-2">Tài liệu đính kèm:</label>
+                        <div id="reviewFileContainer" class="d-grid gap-2"></div>
                     </div>
                 </div>
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button class="btn btn-danger me-md-2" onclick="submitReviewDecision('reject')">❌ Trả lại</button>
-                    <button class="btn btn-success" onclick="submitReviewDecision('approve')">✅ Phê duyệt</button>
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-danger px-3" onclick="submitReviewDecision('reject')" style="border-radius: 8px;">Trả lại</button>
+                    <button class="btn btn-success px-3" onclick="submitReviewDecision('approve')" style="border-radius: 8px;">Phê duyệt</button>
                 </div>
             </div>
         </div>
@@ -667,21 +879,19 @@
 
 <div class="modal fade" id="loginModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0">
-            <div class="modal-header bg-light border-0">
-                <h5 class="modal-title fw-bold text-primary">🔐 Đăng nhập Hệ thống</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="fw-bold small mb-1">Tên đăng nhập (Username)</label>
-                    <input type="text" id="loginUsername" class="form-control form-control-lg bg-light" placeholder="Ví dụ: thuongpb">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-body p-5 text-center">
+                <div class="mb-4 text-primary" style="font-size: 3rem;"><i class="bi bi-shield-lock-fill"></i></div>
+                <h4 class="fw-bold mb-4">Đăng nhập Hệ thống</h4>
+                <div class="form-floating mb-3">
+                    <input type="text" id="loginUsername" class="form-control" placeholder="Username">
+                    <label>Tên đăng nhập</label>
                 </div>
-                <div class="mb-4">
-                    <label class="fw-bold small mb-1">Mã PIN</label>
-                    <input type="password" id="loginPin" class="form-control form-control-lg bg-light" placeholder="Nhập PIN...">
+                <div class="form-floating mb-4">
+                    <input type="password" id="loginPin" class="form-control" placeholder="PIN">
+                    <label>Mã PIN</label>
                 </div>
-                <button type="button" class="btn btn-primary w-100 btn-lg fw-bold shadow-sm" onclick="performLogin()">Đăng nhập</button>
+                <button type="button" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm" onclick="performLogin()">Xác thực & Vào hệ thống</button>
             </div>
         </div>
     </div>
@@ -689,25 +899,25 @@
 
 <div class="modal fade" id="changePinModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0">
-            <div class="modal-header bg-light border-0">
-                <h5 class="modal-title fw-bold">🔐 Đổi Mã PIN</h5>
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Đổi Mã PIN</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3">
-                    <label class="fw-bold small">PIN Cũ:</label>
+                    <label class="small fw-bold text-muted">PIN Cũ</label>
                     <input type="password" id="oldPin" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <label class="fw-bold small">PIN Mới:</label>
+                    <label class="small fw-bold text-muted">PIN Mới</label>
                     <input type="password" id="newPin" class="form-control">
                 </div>
                 <div class="mb-3">
-                    <label class="fw-bold small">Nhập lại PIN Mới:</label>
+                    <label class="small fw-bold text-muted">Nhập lại PIN Mới</label>
                     <input type="password" id="confirmPin" class="form-control">
                 </div>
-                <button type="button" class="btn btn-success w-100 fw-bold mt-3" onclick="submitChangePin()">Xác nhận Đổi</button>
+                <button type="button" class="btn btn-success w-100 mt-2" onclick="submitChangePin()" style="border-radius: 8px;">Lưu thay đổi</button>
             </div>
         </div>
     </div>
@@ -718,15 +928,59 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwmPUxotbgY10hu7VZFP5nDXZv3uCDtMGmYBSm5g3XZU5-N7O0g2SkOwGuX8t5_qw9wuA/exec";
     
     let globalData = [], globalCompliance = [], currentUser = null;
+    let notifications = [];
+    let isFirstLoad = true;
+    let lastTaskData = [];
+    let lastComplianceLength = 0;
+    
     let chatContext = [];
     const STAFF_GROUPS = {
         "Ban Lãnh Đạo": ["Nguyễn Thị Hương Giang - Trưởng Khoa", "Trần Thị Huyền Trang - Phó Khoa"],
         "Dược sĩ": ["Phạm Bá Thương", "Lê Thị Thanh Nhàn", "Chu Đài Trang", "Nguyễn Duy Tiến", "Nguyễn Thị Hằng", "Kiều Mạnh Toàn", "Đỗ Thị Nhật Lệ", "Nguyễn Thị Thu Hà", "Hà Thị Thảo", "Nguyễn Tuấn Thành", "Vũ Thị Hồng Hạnh", "Hà Thu Trang", "Đoàn Thị Mai Hương", "Triệu Thị Vỵ"]
     };
 
+    // UI Helpers
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.querySelector('.overlay').classList.toggle('active');
+    }
+
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.tab-pane-custom').forEach(d => d.classList.add('d-none'));
+        document.getElementById(tabId).classList.remove('d-none');
+        document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+        el.classList.add('active');
+        
+        // Update Title
+        const titles = {
+            'pills-list': 'Danh sách công việc',
+            'pills-report': 'Báo cáo & Thống kê',
+            'pills-input': 'Giao việc mới',
+            'pills-compliance': 'Quản lý Nội quy'
+        };
+        document.getElementById('pageTitle').innerText = titles[tabId];
+        
+        // Close sidebar on mobile
+        if(window.innerWidth < 991) toggleSidebar();
+    }
+    
+    function syncSearch(val) {
+        // Auto switch to list tab
+        if(document.getElementById('pills-list').classList.contains('d-none')){
+             document.querySelector('a[onclick*="pills-list"]').click();
+        }
+        document.getElementById('filterText').value = val;
+        renderTable();
+    }
+
     initUI();
     loadTaskList();
     checkSession();
+    
+    // Auto Poll for Updates every 60s
+    setInterval(() => {
+        refreshNotifications();
+    }, 60000);
 
     function initUI() { 
         initCheckboxes();
@@ -736,6 +990,8 @@
         const now = new Date();
         const monthStr = now.toISOString().slice(0, 7);
         document.getElementById('reportMonthSelect').value = monthStr;
+        // Set default filter month to current month
+        document.getElementById('filterMonth').value = monthStr;
     }
     
     function toggleDeadline() {
@@ -772,8 +1028,11 @@
             h.add(new Option(name, name));
             const d = document.createElement('div');
             d.className = 'person-item';
+            d.style.cssText = 'padding:10px 12px; border-bottom:1px solid #f1f5f9; cursor:pointer; transition:background 0.2s;';
+            d.onmouseover = function() { this.style.background = '#f8fafc'; }
+            d.onmouseout = function() { this.style.background = 'white'; }
             d.onclick = function(e) { e.stopPropagation(); }
-            d.innerHTML = `<input class="form-check-input me-2" type="checkbox" value="${name}" id="chk${i}"><label class="w-100" for="chk${i}">${name}</label>`;
+            d.innerHTML = `<div class="form-check"><input class="form-check-input" type="checkbox" value="${name}" id="chk${i}"><label class="form-check-label w-100 fw-medium" style="color:#334155; cursor:pointer;" for="chk${i}">${name}</label></div>`;
             c.appendChild(d);
             d.querySelector('input').addEventListener('change', (e) => { h.options[i].selected = e.target.checked; updateDisplay(h, t, n); });
         });
@@ -784,7 +1043,6 @@
         Array.from(s.options).forEach(o=>{if(o.selected){cnt++;nm.push(o.value)}});
         c.innerText=cnt;
         t.innerText=cnt===0?"-- Chọn nhân sự --":(cnt<=2?nm.join(", "):`Đã chọn ${cnt} người`);
-        t.className = cnt>0 ? "text-primary fw-bold" : "text-muted";
     }
 
     function initSingleSelect(elId) { 
@@ -819,7 +1077,7 @@
         
         if(!question) return;
 
-        historyDiv.innerHTML += `<div class="msg msg-user">${question}</div>`;
+        historyDiv.innerHTML += `<div class="msg msg-user" style="background: #ecfdf5; color: #047857; align-self: flex-end; margin-left: auto; border-radius: 12px 12px 0 12px; padding: 12px 16px; margin-bottom: 12px; max-width: 85%; font-size: 0.9rem;">${question}</div>`;
         input.value = '';
         historyDiv.scrollTop = historyDiv.scrollHeight;
         typing.style.display = 'block';
@@ -845,14 +1103,13 @@
                     answer = "Lỗi Server: " + res.message;
                 }
                 let displayHtml = answer.replace(/\n/g, '<br>');
-                historyDiv.innerHTML += `<div class="msg msg-ai">${displayHtml}</div>`;
+                historyDiv.innerHTML += `<div class="msg msg-ai" style="background: white; padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid #e2e8f0; max-width: 85%; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom:12px;">${displayHtml}</div>`;
                 
                 chatContext.push({ role: "User", content: question });
                 chatContext.push({ role: "Lily", content: answer });
 
             } catch(e) {
-                historyDiv.innerHTML += `<div class="msg msg-ai text-danger">Lỗi phản hồi: Server chưa cấp quyền hoặc API Key sai.<br>Chi tiết: ${text.substring(0, 100)}...</div>`;
-                console.error("AI Error:", text);
+                historyDiv.innerHTML += `<div class="msg msg-ai text-danger">Lỗi phản hồi AI.</div>`;
             }
             historyDiv.scrollTop = historyDiv.scrollHeight;
         })
@@ -867,14 +1124,15 @@
     function performLogin() {
         const username = document.getElementById('loginUsername').value, pin = document.getElementById('loginPin').value;
         if(!username || !pin) return alert("Vui lòng nhập đầy đủ thông tin!");
+        const btn = event.target; const txt = btn.innerHTML; btn.innerHTML = "Đang xử lý..."; btn.disabled = true;
         fetch(SCRIPT_URL + "?action=login", { method: 'POST', body: JSON.stringify({ username, pin }) }).then(r => r.json()).then(res => {
             if(res.status === 'success') {
                 currentUser = { username: res.username, name: res.name, role: res.role };
                 sessionStorage.setItem('user', JSON.stringify(currentUser));
                 applyLoginState(); bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-                alert(`🔓 Xin chào ${res.name}`); loadTaskList();
+                loadTaskList();
             } else alert("⛔ " + res.message);
-        });
+        }).finally(() => { btn.innerHTML = txt; btn.disabled = false; });
     }
     
     function logout() { sessionStorage.removeItem('user'); currentUser = null; applyLoginState(); location.reload(); }
@@ -883,10 +1141,10 @@
     
     function applyLoginState() {
         const isLoggedIn = !!currentUser;
-        document.getElementById('btnLogin').classList.toggle('d-none', isLoggedIn);
-        document.getElementById('btnLogout').classList.toggle('d-none', !isLoggedIn);
-        document.getElementById('btnChangePin').classList.toggle('d-none', !isLoggedIn);
-        document.getElementById('userDisplay').innerText = isLoggedIn ? `👤 ${currentUser.name}` : "Khách";
+        document.getElementById('btnLogin').style.display = isLoggedIn ? 'none' : 'block';
+        document.getElementById('btnLogout').style.display = isLoggedIn ? 'block' : 'none';
+        document.getElementById('btnChangePin').style.display = isLoggedIn ? 'block' : 'none';
+        document.getElementById('userDisplay').innerText = isLoggedIn ? currentUser.name : "Khách";
         const isAdmin = currentUser && currentUser.role === 'Admin';
         document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty("display", isAdmin ? "block" : "none", "important"));
     }
@@ -899,13 +1157,207 @@
         fetch(SCRIPT_URL + "?action=change_pin", { method: 'POST', body: JSON.stringify({ username: currentUser.username, oldPin, newPin }) }).then(r => r.json()).then(res => { alert(res.message); if(res.status === 'success') { bootstrap.Modal.getInstance(document.getElementById('changePinModal')).hide(); logout(); } });
     }
 
-    function loadTaskList() { 
-        document.getElementById('taskTableBody').innerHTML='<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div><div class="mt-2 text-muted">Đang tải dữ liệu...</div></td></tr>'; 
-        fetch(SCRIPT_URL).then(r=>r.json()).then(res=>{ globalData=res.data; populateFilter(); renderTable(); }); 
+    function loadTaskList(isPolling = false) { 
+        if(!isPolling) document.getElementById('taskTableBody').innerHTML='<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div></td></tr>'; 
+        fetch(SCRIPT_URL).then(r=>r.json()).then(res=>{ 
+            globalData=res.data; 
+            
+            // Check notifications based on new data
+            checkTaskNotifications(globalData);
+            
+            populateFilter(); 
+            renderTable(); 
+        }); 
+    }
+    
+    function loadCompliance(isPolling = false){
+        if(!isPolling) {
+            const tb=document.getElementById('complianceBody');
+            tb.innerHTML='<tr><td colspan="5" class="text-center">Loading...</td></tr>'; 
+        }
+        fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json()).then(res=>{ 
+            globalCompliance = res.data || []; 
+            
+            // Check compliance notifications
+            checkComplianceNotifications(globalCompliance);
+            
+            // Render table
+            const tb=document.getElementById('complianceBody'); tb.innerHTML=""; 
+            if(!res.data||!res.data.length){tb.innerHTML='<tr><td colspan="5" class="text-center text-muted">Chưa có dữ liệu</td></tr>';return;} 
+            
+            // Sắp xếp dữ liệu mới nhất lên đầu
+            let sortedData = res.data.slice().sort((a, b) => new Date(b[1]) - new Date(a[1]));
+            
+            let html = [];
+            let lastMonth = "";
+
+            sortedData.forEach(r => { 
+                let d = new Date(r[1]);
+                if(isNaN(d.getTime())) return;
+
+                // Tạo tiêu đề tháng nếu khác tháng trước đó
+                let currentMonth = "Tháng " + (d.getMonth() + 1) + "/" + d.getFullYear();
+                if (currentMonth !== lastMonth) {
+                    lastMonth = currentMonth;
+                    html.push(`<tr class="table-light"><td colspan="5" class="fw-bold text-primary bg-light" style="padding: 12px 16px;">📅 ${currentMonth}</td></tr>`);
+                }
+
+                let h=r.length>=6,t=h?r[3]:(String(r[3]).includes("Khen")?"Khen thưởng":"Vi phạm"),c=h?r[4]:r[3],n=h?r[5]:r[4];
+                let b=t.includes("Khen")?'<span class="badge bg-warning bg-opacity-10 text-warning border border-warning shadow-sm">🏆 Khen thưởng</span>':'<span class="badge bg-danger bg-opacity-10 text-danger border border-danger shadow-sm">⚠️ Vi phạm</span>'; 
+                
+                html.push(`<tr>
+                    <td>${d.toLocaleDateString('vi-VN')}</td>
+                    <td class="fw-bold text-dark">${r[2]}</td>
+                    <td>${b}</td>
+                    <td class="text-muted">${c}</td>
+                    <td>${n||''}</td>
+                </tr>`); 
+            }); 
+            
+            tb.innerHTML = html.join('');
+        }); 
+    }
+
+    function checkTaskNotifications(newData) {
+        if (isFirstLoad) {
+            lastTaskData = newData;
+            return;
+        }
+
+        // 1. Detect New Tasks (Simple logic: ID is not in old data)
+        const oldIds = new Set(lastTaskData.map(r => r[0]));
+        newData.forEach(row => {
+            if (!oldIds.has(row[0])) {
+                // New Task Found
+                let msg = `Công việc mới: ${row[1]}`;
+                addNotification('task', 'Công việc mới', row[1]);
+            } else {
+                // 2. Detect Status Changes (e.g. Waiting for approval)
+                // Find old row
+                let oldRow = lastTaskData.find(r => r[0] === row[0]);
+                if (oldRow) {
+                    let oldStatus = String(oldRow[2]).trim();
+                    let newStatus = String(row[2]).trim();
+                    if (oldStatus !== 'Waiting' && newStatus === 'Waiting') {
+                        // Someone submitted report
+                        addNotification('waiting', 'Chờ duyệt', `${row[7]} vừa báo cáo hoàn thành: ${row[1]}`);
+                    }
+                }
+            }
+        });
+        lastTaskData = newData;
+    }
+
+    function checkComplianceNotifications(newData) {
+        if (isFirstLoad) {
+            lastComplianceLength = newData.length;
+            isFirstLoad = false; // Mark initial load done after both data sets are in
+            return;
+        }
+
+        if (newData.length > lastComplianceLength) {
+            // New items added
+            let count = newData.length - lastComplianceLength;
+            // Get the last 'count' items (assuming append only)
+            let newItems = newData.slice(lastComplianceLength); // Original data is append-only usually
+            newItems.forEach(item => {
+                let type = String(item[3]).includes("Khen") ? "Khen thưởng" : "Vi phạm";
+                let person = item[2];
+                let title = type === "Khen thưởng" ? "🏆 Khen thưởng mới" : "⚠️ Vi phạm mới";
+                addNotification(type === "Khen thưởng" ? 'reward' : 'warn', title, `${person}: ${item[4] || item[3]}`);
+            });
+        }
+        lastComplianceLength = newData.length;
+    }
+
+    function addNotification(type, title, message) {
+        const iconMap = {
+            'task': '<i class="bi bi-briefcase-fill text-primary"></i>',
+            'waiting': '<i class="bi bi-hourglass-split text-warning"></i>',
+            'reward': '<i class="bi bi-trophy-fill text-warning"></i>',
+            'warn': '<i class="bi bi-exclamation-triangle-fill text-danger"></i>'
+        };
+        
+        const noti = {
+            icon: iconMap[type] || '<i class="bi bi-bell-fill"></i>',
+            title: title,
+            message: message,
+            time: 'Vừa xong',
+            read: false
+        };
+        
+        notifications.unshift(noti); // Add to top
+        updateNotificationUI();
+    }
+
+    function updateNotificationUI() {
+        const list = document.getElementById('notificationList');
+        const badge = document.getElementById('notiBadge');
+        
+        // Update Badge
+        const unreadCount = notifications.filter(n => !n.read).length;
+        if (unreadCount > 0) {
+            badge.innerText = unreadCount;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        // Render List
+        if (notifications.length === 0) {
+            list.innerHTML = '<li class="p-4 text-center text-muted small">Không có thông báo mới</li>';
+            return;
+        }
+
+        let html = '';
+        notifications.slice(0, 10).forEach((n, index) => {
+            html += `
+            <li class="noti-item ${!n.read ? 'unread' : ''}">
+                <div class="d-flex gap-3">
+                    <div class="noti-icon bg-white border shadow-sm">${n.icon}</div>
+                    <div>
+                        <div class="fw-bold small text-dark">${n.title}</div>
+                        <div class="text-muted small" style="font-size:0.8rem; line-height:1.3;">${n.message}</div>
+                        <div class="text-secondary" style="font-size:0.7rem; margin-top:4px;">${n.time}</div>
+                    </div>
+                </div>
+            </li>`;
+        });
+        list.innerHTML = html;
+    }
+
+    function markAllRead() {
+        if(notifications.some(n => !n.read)) {
+            notifications.forEach(n => n.read = true);
+            // Visual delay to let user see badge disappear
+            setTimeout(updateNotificationUI, 1000);
+        }
+    }
+    
+    function refreshNotifications() {
+        // Manually trigger data fetch to check updates
+        loadTaskList(true); // true = polling mode, silent UI
+        loadCompliance(true);
+    }
+
+    function getInitials(name) {
+        if(!name) return "?";
+        let parts = name.trim().split(" ");
+        if(parts.length === 1) return parts[0].substring(0,2).toUpperCase();
+        return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+    }
+    
+    function getRandomColor(name) {
+        const colors = ['#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        return colors[Math.abs(hash) % colors.length];
     }
 
     function renderTable() {
-        const tb = document.getElementById('taskTableBody'); tb.innerHTML="";
+        const tb = document.getElementById('taskTableBody'); 
+        
+        const fMonth = document.getElementById('filterMonth').value; // Get Month Value
         const fG = document.getElementById('filterGroup').value.toLowerCase().trim();
         const fN = document.getElementById('filterAssignee').value.toLowerCase().trim();
         const fS = document.getElementById('filterStatus').value;
@@ -913,6 +1365,14 @@
         const fT = document.getElementById('filterText').value.toLowerCase().trim();
         const today = new Date(); today.setHours(0,0,0,0);
         
+        // Calculate Month Filter Range
+        let filterStart = null, filterEnd = null;
+        if(fMonth) {
+            const [y, m] = fMonth.split('-').map(Number);
+            filterStart = new Date(y, m - 1, 1);
+            filterEnd = new Date(y, m, 0, 23, 59, 59);
+        }
+
         const getEffectiveStatus = (rawSt, createdStr) => {
             let createdDate = createdStr ? new Date(createdStr) : new Date();
             createdDate.setHours(0,0,0,0);
@@ -925,18 +1385,45 @@
             let as = String(r[7]).toLowerCase(), rawSt = String(r[2]).trim(), nm = String(r[1]).toLowerCase();
             let diff = String(r[12] || ""); 
             let st = getEffectiveStatus(rawSt, r[6]);
+            let type = String(r[10] || "Thường quy"); 
             let statusMatch = true;
             let dlRaw = r[9] || r[4];
             let isOverdue = (dlRaw && new Date(dlRaw) < today && st !== 'Done' && st !== 'Waiting');
 
+            // 1. Status Filter
             if (fS === 'Pending') statusMatch = (st !== 'Done' && st !== 'Waiting'); 
             else if (fS === 'Done') statusMatch = (st === 'Done');
             else if (fS === 'Waiting') statusMatch = (st === 'Waiting');
             else if (fS === 'Overdue') statusMatch = isOverdue;
+            else if (fS === 'NoRoutine') statusMatch = (type !== 'Thường quy');
 
-            return (fG === "" || group.includes(fG)) && (fN === "" || as.includes(fN)) && (fD === "" || diff === fD) && statusMatch && (fT === "" || nm.includes(fT));
+            // 2. Month Overlap Logic
+            let monthMatch = true;
+            if (filterStart && filterEnd) {
+                let taskStart = new Date(r[6]); // Created Date
+                let taskEnd = dlRaw ? new Date(dlRaw) : new Date(); // Use deadline or today if active
+                
+                // If Done, strictly it finished at taskEnd.
+                // If Active/Overdue, it extends to today or deadline.
+                if (!dlRaw && st !== 'Done') taskEnd = new Date(today.getFullYear() + 1, 0, 1); // No deadline & active -> Future
+                
+                // Normalize
+                taskStart.setHours(0,0,0,0);
+                taskEnd.setHours(23,59,59,999);
+
+                // Check Overlap: (StartA <= EndB) and (EndA >= StartB)
+                monthMatch = (taskStart <= filterEnd && taskEnd >= filterStart);
+            }
+
+            return (fG === "" || group.includes(fG)) && 
+                   (fN === "" || as.includes(fN)) && 
+                   (fD === "" || diff === fD) && 
+                   statusMatch && 
+                   monthMatch && // Add month check
+                   (fT === "" || nm.includes(fT));
         });
         
+        // ... (Sort logic remains the same) ...
         flt.sort((a, b) => {
             const grpA = (a[11] || "").toLowerCase(), grpB = (b[11] || "").toLowerCase(); if (grpA < grpB) return -1; if (grpA > grpB) return 1;
             const statusA = getEffectiveStatus(String(a[2]).trim(), a[6]);
@@ -946,7 +1433,12 @@
             const dateA = new Date(a[9] || a[4] || '9999-12-31'); const dateB = new Date(b[9] || b[4] || '9999-12-31'); return dateA - dateB;
         });
         
-        if(flt.length === 0) { tb.innerHTML='<tr><td colspan="7" class="text-center text-muted py-4">Không tìm thấy công việc nào.</td></tr>'; return; }
+        if(flt.length === 0) { 
+            tb.innerHTML='<tr><td colspan="7" class="text-center text-muted py-5">Không tìm thấy công việc nào trong khoảng thời gian này.</td></tr>'; 
+            return; 
+        }
+
+        let tableHTML = [];
 
         flt.forEach(r => {
             let id = r[0], name = r[1], rawStatus = String(r[2]).trim(), assignee = r[7];
@@ -973,77 +1465,90 @@
 
             let dlHtml = '';
             if (!dlRaw || type === 'Thường quy') {
-                 dlHtml = '<span class="badge bg-light text-secondary border">🔄 Thường quy</span>';
+                 dlHtml = '<span class="text-muted small"><i class="bi bi-infinity"></i> Thường quy</span>';
             } else {
-                dlHtml = dlDisp;
-                if (r[9] && r[9] !== r[4]) dlHtml = `<span class="deadline-original">${new Date(r[4]).toLocaleDateString('vi-VN')}</span><br><span class="deadline-extended">↳ ${dlDisp}</span>`;
-                if (isOverdue) dlHtml = `<span class="text-danger fw-bold">⚠️ ${dlHtml}</span>`;
+                if (r[9] && r[9] !== r[4]) {
+                     dlHtml = `<div class="d-flex flex-column"><span class="text-decoration-line-through text-muted" style="font-size:0.75em">${new Date(r[4]).toLocaleDateString('vi-VN')}</span><span class="text-primary fw-bold" style="font-size:0.85em">${dlDisp}</span></div>`;
+                } else {
+                     dlHtml = `<span class="fw-bold" style="color: #334155;">${dlDisp}</span>`;
+                }
+                if (isOverdue) dlHtml = `<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle-fill"></i> ${dlDisp}</span>`;
             }
 
             let slider = status === 'Done' 
-                ? `<div class="progress" style="height:8px;"><div class="progress-bar bg-success" style="width:100%"></div></div><small class="text-success fw-bold">100%</small>` 
-                : `<div class="d-flex align-items-center" style="${disableControl}"><input type="range" class="form-range me-2" style="width:80px" min="0" max="100" step="10" value="${prog}" onchange="updateProgress('${id}',this.value)"><span class="badge bg-light text-dark border" id="val-${id}">${prog}%</span></div>`;
+                ? `<div class="progress" style="height:6px; width:100px; border-radius:10px;"><div class="progress-bar bg-success" style="width:100%"></div></div>` 
+                : `<div class="d-flex align-items-center" style="${disableControl}"><input type="range" class="form-range me-2" style="width:70px" min="0" max="100" step="10" value="${prog}" onchange="updateProgress('${id}',this.value)"><span class="badge bg-light text-dark border" id="val-${id}" style="width:40px">${prog}%</span></div>`;
 
             let actionBtns = '';
             let attachLink = (fileUrl && currentUser && currentUser.role === 'Admin') 
-                ? `<div class="mb-1"><button onclick="openReviewModal('${id}')" class="btn btn-sm btn-info text-white" title="Xem báo cáo"><i class="bi bi-file-earmark-text"></i> 📄 Xem Báo cáo</button></div>` 
+                ? `<button onclick="openReviewModal('${id}')" class="btn btn-sm btn-white border shadow-sm text-primary" title="Xem báo cáo"><i class="bi bi-file-earmark-text-fill"></i></button>` 
                 : '';
 
             if (status === 'Done') {
-                actionBtns = '<span class="text-success fw-bold">✔ Hoàn tất</span>';
+                actionBtns = '<span class="text-success"><i class="bi bi-check-circle-fill fs-5"></i></span>';
             } else if (status === 'Waiting') {
                 actionBtns = attachLink;
                 if (currentUser && currentUser.role === 'Admin') {
                     actionBtns += `
-                    <div class="d-flex gap-1 justify-content-center mt-1">
-                        <button class="btn btn-sm btn-success" onclick="approveTask('${id}')" title="Duyệt">✅ Duyệt</button>
-                        <button class="btn btn-sm btn-danger" onclick="rejectTask('${id}')" title="Từ chối">❌</button>
-                    </div>`;
+                    <button class="btn btn-sm btn-success ms-1" onclick="approveTask('${id}')" title="Duyệt"><i class="bi bi-check-lg"></i></button>
+                    <button class="btn btn-sm btn-danger ms-1" onclick="rejectTask('${id}')" title="Từ chối"><i class="bi bi-x-lg"></i></button>`;
                 } else {
-                    actionBtns += `<span class="text-muted fst-italic small">⏳ Đang chờ duyệt...</span>`;
+                    actionBtns += `<span class="text-muted small fst-italic">Đợi duyệt...</span>`;
                 }
             } else {
                 if (currentUser && currentUser.role === 'Admin') {
-                    actionBtns = `<button class="btn btn-sm btn-outline-success w-100 mb-1" onclick="approveTask('${id}')">✅ Duyệt ngay</button>`;
+                    actionBtns = `<button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="approveTask('${id}')">Duyệt ngay</button>`;
                 } else {
-                    actionBtns = `<div class="btn-action-group" style="${disableControl}">
-                        <button class="btn btn-sm btn-outline-primary w-100 mb-1" onclick="openReportModal('${id}')">📩 Báo cáo</button>
-                        <button class="btn btn-sm btn-outline-warning w-100 text-dark" onclick="sendEmailBackend('${id}','${name}','${assignee}','${dlRaw}')">📧 Nhắc</button>
+                    actionBtns = `<div style="${disableControl}">
+                        <button class="btn btn-sm btn-primary-custom py-1 px-2" style="font-size:0.8rem" onclick="openReportModal('${id}')" title="Báo cáo"><i class="bi bi-send-fill"></i></button>
+                        <button class="btn btn-sm btn-white border text-warning ms-1 py-1 px-2" style="font-size:0.8rem" onclick="sendEmailBackend('${id}','${name}','${assignee}','${dlRaw}')" title="Nhắc"><i class="bi bi-envelope-fill"></i></button>
                     </div>`;
                 }
             }
 
-            let groupBadge = group ? `<span class="badge bg-secondary mb-1" style="font-size:0.7em">${group}</span>` : '';
-            let diffHtml = '<span class="text-muted small">-</span>';
+            let groupBadge = group ? `<span class="badge bg-light text-secondary border fw-normal mb-1" style="font-size:0.65em; letter-spacing:0.02em;">${group.toUpperCase()}</span>` : '';
+            let diffHtml = '';
             if(difficulty) {
-                if(difficulty == '1') diffHtml = '<span class="badge-diff diff-easy">⭐ Dễ</span>';
-                else if(difficulty == '2') diffHtml = '<span class="badge-diff diff-medium">⭐⭐ TB</span>';
-                else if(difficulty == '3') diffHtml = '<span class="badge-diff diff-hard">⭐⭐⭐ Khó</span>';
-                else if(difficulty == '4') diffHtml = '<span class="badge-diff diff-complex">⭐⭐⭐⭐ Phức tạp</span>';
+                let stars = '';
+                for(let i=0; i<parseInt(difficulty); i++) stars += '<i class="bi bi-star-fill text-warning" style="font-size:0.7rem; margin-right:1px;"></i>';
+                diffHtml = `<div>${stars}</div>`;
             }
 
             let editBtn = '';
             if (currentUser && currentUser.role === 'Admin') {
-                editBtn = `<button class="btn btn-sm btn-link text-secondary p-0 ms-2" onclick="openEditTask('${id}')" title="Sửa công việc">✏️</button>`;
+                editBtn = `<button class="btn btn-sm text-muted p-0 ms-2 opacity-50 hover-opacity-100" onclick="openEditTask('${id}')"><i class="bi bi-pencil-square"></i></button>`;
+            }
+            
+            // Assignee Display Logic (Full Name)
+            let assignees = assignee.split(',').map(s => s.trim()).filter(s => s);
+            let assigneeHtml = '';
+            if(assignees.length > 0) {
+                 assigneeHtml = `<span class="fw-bold text-dark" style="font-size: 0.85rem;">${assignees.join(', ')}</span>`;
+            } else {
+                assigneeHtml = '<span class="text-muted small">Chưa giao</span>';
             }
 
-            tb.innerHTML += `<tr class="${isOverdue ? 'table-danger' : ''}">
+            tableHTML.push(`<tr>
                 <td>
                     ${groupBadge} 
                     <div class="d-flex align-items-center">
-                        <span class="fw-bold text-dark">${name}</span>
+                        <span class="fw-bold text-dark text-wrap" style="font-size:0.95rem;">${name}</span>
                         ${editBtn}
                     </div>
-                    <div class="text-muted small mt-1"><em>${r[5] || ''}</em></div>
+                    <div class="text-muted mt-1 text-wrap d-flex align-items-center gap-1" style="font-size: 0.8em; max-width: 300px;">
+                        <i class="bi bi-info-circle"></i> ${r[5] || 'Không có ghi chú'}
+                    </div>
                 </td>
                 <td class="text-center">${diffHtml}</td>
                 <td>${slider}</td>
-                <td><small class="fw-bold text-primary">${assignee}</small></td>
+                <td>${assigneeHtml}</td>
                 <td class="small">${dlHtml}</td>
-                <td><span class="badge badge-status ${badgeClass}">${statusText}</span></td>
-                <td class="text-center align-middle">${actionBtns}</td>
-            </tr>`;
+                <td><span class="status-badge ${badgeClass}">${statusText}</span></td>
+                <td class="text-center">${actionBtns}</td>
+            </tr>`);
         });
+
+        tb.innerHTML = tableHTML.join('');
     }
     
     function parseProgress(val) { if(!val)return 0; let s=String(val).replace(/^'/,'').replace('%','').trim(); let n=parseFloat(s); return isNaN(n)?0:(n<=1&&n>0&&s.includes('.')?Math.round(n*100):Math.round(n)); }
@@ -1122,7 +1627,7 @@
         for (let i = 0; i < files.length; i++) totalSize += files[i].size;
         
         if (totalSize > 10 * 1024 * 1024) {
-            errDiv.innerText = "Tổng dung lượng các file quá lớn (>10MB). Vui lòng gửi ít file hơn."; 
+            errDiv.innerText = "Tổng dung lượng >10MB. Vui lòng gửi ít file hơn."; 
             errDiv.style.display = 'block'; return;
         }
 
@@ -1154,7 +1659,7 @@
             return;
         }
 
-        statusDiv.innerText = "Đang gửi lên máy chủ...";
+        statusDiv.innerText = "Đang gửi...";
 
         const payload = {
             id: id,
@@ -1178,7 +1683,6 @@
                     alert("⚠️ Lỗi từ Server: " + res.message);
                 }
             } catch(e) {
-                console.error("Report Error:", text);
                 alert("Lỗi phản hồi Server.");
             }
         })
@@ -1204,7 +1708,7 @@
 
     function rejectTask(id) {
         if(!currentUser || currentUser.role !== 'Admin') return alert("⛔ Chỉ Admin mới được quyền này!");
-        if(!confirm('Từ chối báo cáo này và yêu cầu làm lại?')) return;
+        if(!confirm('Từ chối báo cáo này?')) return;
 
         fetch(SCRIPT_URL + "?action=reject_done", {
             method: 'POST',
@@ -1282,7 +1786,7 @@
              let linksHtml = '';
              fileUrls.forEach((url, index) => {
                  if(url.trim()) {
-                    linksHtml += `<a href="${url}" target="_blank" class="btn btn-outline-primary w-100 fw-bold mb-2"><i class="bi bi-file-earmark-text"></i> Mở File ${index + 1}</a>`;
+                    linksHtml += `<a href="${url}" target="_blank" class="btn btn-outline-primary w-100 fw-bold"><i class="bi bi-cloud-arrow-down-fill"></i> Mở File ${index + 1}</a>`;
                  }
              });
              container.innerHTML = linksHtml;
@@ -1305,9 +1809,9 @@
 
     function sendEmailBackend(id,t,p,d){ 
         if(!confirm(`Gửi mail nhắc nhở cho ${p}?`))return; 
-        let dl=d?new Date(d).toLocaleDateString('vi-VN'):'Sớm nhất'; const btn=event.target; const txt=btn.innerText; btn.innerText="⏳..."; btn.disabled=true; 
+        let dl=d?new Date(d).toLocaleDateString('vi-VN'):'Sớm nhất'; const btn=event.target.closest('button'); const txt=btn.innerHTML; btn.innerHTML="..."; btn.disabled=true; 
         fetch(SCRIPT_URL+"?action=send_email_manual",{method:'POST',body:JSON.stringify({taskName:t,assignee:p,deadline:dl})})
-        .then(r=>r.json()).then(res=>{alert(res.message)}).finally(()=>{btn.innerText=txt;btn.disabled=false}); 
+        .then(r=>r.json()).then(res=>{alert(res.message)}).finally(()=>{btn.innerHTML=txt;btn.disabled=false}); 
     }
     
     function triggerBulkEmail() { 
@@ -1327,7 +1831,7 @@
         const d=Object.fromEntries(new FormData(e.target).entries()); 
         d.assignee=Array.from(document.getElementById('hiddenAssigneeSelect').selectedOptions).map(o=>o.value).join(', '); d.role=currentUser.role; 
         fetch(SCRIPT_URL+"?action=add",{method:'POST',body:JSON.stringify(d)}).then(r=>r.json()).then(res=>{ 
-            alert(res.message); if(res.status==='success'){ e.target.reset(); document.querySelectorAll('#checkboxContainer input').forEach(c=>c.checked=false); updateDisplay(document.getElementById('hiddenAssigneeSelect'),document.getElementById('selectedText'),document.getElementById('selectedCount')); document.querySelector('[data-bs-target="#pills-list"]').click(); loadTaskList(); } 
+            alert(res.message); if(res.status==='success'){ e.target.reset(); document.querySelectorAll('#checkboxContainer input').forEach(c=>c.checked=false); updateDisplay(document.getElementById('hiddenAssigneeSelect'),document.getElementById('selectedText'),document.getElementById('selectedCount')); document.querySelector('a[onclick*="pills-list"]').click(); loadTaskList(); } 
         }).finally(()=>{btn.disabled=false; btn.innerText = "💾 LƯU CÔNG VIỆC";}); 
     });
 
@@ -1339,19 +1843,6 @@
             alert(res.message); if(res.status==='success'){e.target.reset(); loadCompliance();} 
         }).finally(()=>{btn.disabled=false;}); 
     });
-
-    function loadCompliance(){
-        const tb=document.getElementById('complianceBody');tb.innerHTML='<tr><td colspan="5" class="text-center">Loading...</td></tr>'; 
-        fetch(SCRIPT_URL+"?action=read_compliance").then(r=>r.json()).then(res=>{ 
-            globalCompliance = res.data || []; tb.innerHTML=""; 
-            if(!res.data||!res.data.length){tb.innerHTML='<tr><td colspan="5" class="text-center text-muted">Chưa có dữ liệu</td></tr>';return;} 
-            res.data.reverse().forEach(r=>{ 
-                let h=r.length>=6,t=h?r[3]:(r[3].includes("Khen")?"Khen thưởng":"Vi phạm"),c=h?r[4]:r[3],n=h?r[5]:r[4];
-                let b=t.includes("Khen")?'<span class="badge bg-warning text-dark">🏆 Khen thưởng</span>':'<span class="badge bg-danger">⚠️ Vi phạm</span>'; 
-                tb.innerHTML+=`<tr><td>${new Date(r[1]).toLocaleDateString('vi-VN')}</td><td class="fw-bold">${r[2]}</td><td>${b}</td><td>${c}</td><td>${n||''}</td></tr>`; 
-            }); 
-        }); 
-    }
 
     google.charts.load('current',{'packages':['corechart','bar']});
     function loadDashboard() { 
@@ -1367,29 +1858,190 @@
         const startOfMonth = new Date(year, month - 1, 1); const endOfMonth = new Date(year, month, 0, 23, 59, 59); const today = new Date(); today.setHours(0,0,0,0);
         const filteredTasks = globalData.filter(r => { const created = new Date(r[6]); let deadline = r[9] ? new Date(r[9]) : (r[4] ? new Date(r[4]) : new Date()); return created <= endOfMonth && deadline >= startOfMonth; });
         const filteredCompliance = globalCompliance.filter(r => { const date = new Date(r[1]); return date >= startOfMonth && date <= endOfMonth; });
+        
+        let sTotal = filteredTasks.length;
+        let sDone = filteredTasks.filter(r => String(r[2]).trim() === 'Done').length;
+        
+        // --- UPDATED LOGIC: Split Doing into Routine & Deadline ---
+        let sDoingDeadline = filteredTasks.filter(r => {
+            let st = String(r[2]).trim();
+            let type = String(r[10] || "Thường quy");
+            let dl = r[9] ? new Date(r[9]) : (r[4] ? new Date(r[4]) : null);
+            let isOverdue = (st !== 'Done' && dl && dl < today);
+            
+            // "Doing Deadline": Not Done, Not Overdue, Type is NOT 'Thường quy'
+            return (st !== 'Done' && !isOverdue) && type !== 'Thường quy';
+        }).length;
+
+        let sDoingRoutine = filteredTasks.filter(r => {
+            let st = String(r[2]).trim();
+            let type = String(r[10] || "Thường quy");
+            // "Doing Routine": Not Done (Routine tasks usually don't have overdue concept unless set, but simplified here)
+            // Or strictly: status is Doing/Todo and type is 'Thường quy'
+            return (st === 'Doing' || st === 'Todo') && type === 'Thường quy';
+        }).length;
+
+        let sOverdue = filteredTasks.filter(r => {
+             let status = String(r[2]).trim();
+             let dl = r[9] ? new Date(r[9]) : (r[4] ? new Date(r[4]) : null);
+             return (status !== 'Done' && dl && dl < today);
+        }).length;
+
+        document.getElementById('stat-total').innerText = sTotal;
+        document.getElementById('stat-done').innerText = sDone;
+        document.getElementById('stat-doing-deadline').innerText = sDoingDeadline; // Updated ID
+        document.getElementById('stat-doing-routine').innerText = sDoingRoutine;   // Updated ID
+        document.getElementById('stat-overdue').innerText = sOverdue;
+
         drawCharts(filteredTasks, filteredCompliance); renderCal(filteredTasks, filteredCompliance, today);
     }
 
+    function renderCal(tasks, compliances, today) {
+        var calendarEl = document.getElementById('calendar');
+        calendarEl.innerHTML = ''; 
+
+        var events = [];
+        tasks.forEach(t => {
+            let dateStr = t[9] || t[4];
+            if (dateStr) {
+                let status = String(t[2]).trim();
+                let isDone = status === 'Done';
+                let color = isDone ? '#10b981' : (new Date(dateStr) < today ? '#ef4444' : '#3b82f6');
+                
+                events.push({
+                    title: (isDone ? '✅ ' : '⏰ ') + t[1],
+                    start: dateStr,
+                    backgroundColor: color,
+                    borderColor: color,
+                    extendedProps: { description: t[7], type: 'task' }
+                });
+            }
+        });
+        
+        // Compliance Events Logic
+        compliances.forEach(r => {
+            let dateStr = r[1];
+            if (dateStr) {
+                let h = r.length >= 6;
+                let type = h ? r[3] : (String(r[3]).includes("Khen") ? "Khen thưởng" : "Vi phạm");
+                let content = h ? r[4] : r[3];
+                let person = r[2];
+                
+                let isReward = type.includes("Khen");
+                let color = isReward ? '#f59e0b' : '#ef4444'; // Amber vs Red
+                let icon = isReward ? '🏆 ' : '⚠️ ';
+
+                events.push({
+                    title: icon + person,
+                    start: dateStr,
+                    backgroundColor: color,
+                    borderColor: color,
+                    allDay: true,
+                    extendedProps: { 
+                        description: `[${type}] ${content}`,
+                        type: 'compliance'
+                    }
+                });
+            }
+        });
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'vi',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listMonth'
+            },
+            events: events,
+            height: 600,
+            eventClick: function(info) {
+                 let props = info.event.extendedProps;
+                 if (props.type === 'compliance') {
+                      alert(info.event.title + '\nNội dung: ' + props.description);
+                 } else {
+                      alert('Công việc: ' + info.event.title + '\nNgười làm: ' + props.description);
+                 }
+            }
+        });
+        calendar.render();
+    }
+
     function drawCharts(t,c) { 
-        var stats = {'Done': 0, 'Doing': 0, 'Overdue': 0}; var diffStats = {'1': 0, '2': 0, '3': 0, '4': 0, 'Unknown': 0}; var p = {}; var today = new Date(); today.setHours(0,0,0,0);
+        var stats = {'Done': 0, 'Doing': 0, 'Overdue': 0}; 
+        var diffStats = {'1': 0, '2': 0, '3': 0, '4': 0, 'Unknown': 0}; 
+        var p = {}; 
+        var today = new Date(); today.setHours(0,0,0,0);
+        
         t.forEach(r => {
-            let status = String(r[2]).trim(); let dlRaw = r[9] || r[4]; let dl = dlRaw ? new Date(dlRaw) : null; let isOverdue = (status !== 'Done' && dl && dl < today); let diff = r[12] || 'Unknown';
-            if (status === 'Done') stats.Done++; else if (isOverdue) stats.Overdue++; else stats.Doing++;
+            let status = String(r[2]).trim(); 
+            let dlRaw = r[9] || r[4]; 
+            let dl = dlRaw ? new Date(dlRaw) : null; 
+            let isOverdue = (status !== 'Done' && dl && dl < today); 
+            let diff = r[12] || 'Unknown';
+
+            if (status === 'Done') stats.Done++; 
+            else if (isOverdue) stats.Overdue++; 
+            else stats.Doing++;
+
             if (diffStats[diff] !== undefined) diffStats[diff]++; else diffStats['Unknown']++;
-            String(r[7]).split(',').forEach(n=>{ n=n.trim(); if(n){ if(!p[n]) p[n] = { done: 0, overdue: 0, normal: 0 }; if (status === 'Done') p[n].done++; else if (isOverdue) p[n].overdue++; else p[n].normal++; } });
+
+            String(r[7]).split(',').forEach(n=>{ 
+                n=n.trim(); 
+                if(n){ 
+                    if(!p[n]) p[n] = { done: 0, overdue: 0, normal: 0 }; 
+                    if (status === 'Done') p[n].done++; 
+                    else if (isOverdue) p[n].overdue++; 
+                    else p[n].normal++; 
+                } 
+            });
         }); 
+
+        const chartFont = 'Manrope';
+        
         var pieData = google.visualization.arrayToDataTable([['Trạng thái', 'Số lượng'],['Đã xong', stats.Done],['Đang làm', stats.Doing],['Quá hạn', stats.Overdue]]);
-        new google.visualization.PieChart(document.getElementById('piechart_task')).draw(pieData, { colors: ['#198754', '#0dcaf0', '#dc3545'], is3D: false, pieHole: 0.4, legend: {position: 'bottom'}, chartArea:{width:'90%',height:'80%'} }); 
+        var pieOptions = { 
+            colors: ['#10b981', '#3b82f6', '#ef4444'], 
+            pieHole: 0.5, 
+            fontName: chartFont,
+            legend: {position: 'bottom'}, 
+            chartArea:{width:'90%',height:'75%'},
+            backgroundColor: 'transparent'
+        };
+        new google.visualization.PieChart(document.getElementById('piechart_task')).draw(pieData, pieOptions); 
+        
         var diffData = google.visualization.arrayToDataTable([['Độ khó', 'Số lượng'],['Dễ', diffStats['1']],['Trung bình', diffStats['2']],['Khó', diffStats['3']],['Phức tạp', diffStats['4']]]);
-        new google.visualization.PieChart(document.getElementById('piechart_difficulty')).draw(diffData, { colors: ['#a3cfbb', '#ffe5d0', '#f5c2c7', '#e0cffc'], is3D: false, pieHole: 0.4, legend: {position: 'bottom'}, chartArea:{width:'90%',height:'80%'} });
-        var arr = [['Nhân viên', 'Đã xong', 'Đang làm', 'Quá hạn']]; Object.keys(p).sort().forEach(k => { arr.push([k, p[k].done, p[k].normal, p[k].overdue]); });
-        if(arr.length > 1) new google.visualization.ColumnChart(document.getElementById('barchart_task')).draw(google.visualization.arrayToDataTable(arr),{ isStacked: true, colors: ['#198754', '#0dcaf0', '#dc3545'], legend: { position: 'bottom' }, chartArea: {width:'85%', height:'70%'} }); 
+        var diffOptions = { 
+            colors: ['#34d399', '#fbbf24', '#f87171', '#a78bfa'], 
+            pieHole: 0.5, 
+            fontName: chartFont,
+            legend: {position: 'bottom'}, 
+            chartArea:{width:'90%',height:'75%'},
+            backgroundColor: 'transparent'
+        };
+        new google.visualization.PieChart(document.getElementById('piechart_difficulty')).draw(diffData, diffOptions);
+
+        var arr = [['Nhân viên', 'Đã xong', 'Đang làm', 'Quá hạn']]; 
+        Object.keys(p).sort().forEach(k => { arr.push([k, p[k].done, p[k].normal, p[k].overdue]); });
+        if(arr.length > 1) {
+            new google.visualization.ColumnChart(document.getElementById('barchart_task')).draw(google.visualization.arrayToDataTable(arr),{ 
+                isStacked: true, 
+                colors: ['#10b981', '#3b82f6', '#ef4444'], 
+                fontName: chartFont,
+                legend: { position: 'bottom' }, 
+                chartArea: {width:'85%', height:'70%'},
+                backgroundColor: 'transparent'
+            }); 
+        }
+
+        // Compliance Charts
         var pc={}; c.forEach(r=>{let n=r[2],h=r.length>=6,tp=h?r[3]:(r[3].includes("Khen")?"Khen":"Vi phạm");if(!pc[n])pc[n]=0;if(!tp.includes("Khen"))pc[n]++;}); 
-        var ac=[['NV','Vi phạm',{role:"style"}]]; Object.keys(pc).sort().forEach(k=>{if(pc[k]>0)ac.push([k,pc[k],'#dc3545']);}); 
-        if(ac.length>1) new google.visualization.ColumnChart(document.getElementById('columnchart_violation')).draw(google.visualization.arrayToDataTable(ac),{legend:'none',chartArea:{width:'85%',height:'70%'}}); else document.getElementById('columnchart_violation').innerHTML="<div class='d-flex align-items-center justify-content-center h-100 text-muted'>Trống</div>";
+        var ac=[['NV','Vi phạm',{role:"style"}]]; Object.keys(pc).sort().forEach(k=>{if(pc[k]>0)ac.push([k,pc[k],'#ef4444']);}); 
+        if(ac.length>1) new google.visualization.ColumnChart(document.getElementById('columnchart_violation')).draw(google.visualization.arrayToDataTable(ac),{legend:'none', fontName: chartFont, chartArea:{width:'85%',height:'70%'}, backgroundColor: 'transparent'}); else document.getElementById('columnchart_violation').innerHTML="<div class='d-flex align-items-center justify-content-center h-100 text-muted small'>Chưa có dữ liệu</div>";
+
         var pr={}; c.forEach(r=>{let n=r[2],h=r.length>=6,tp=h?r[3]:(r[3].includes("Khen")?"Khen":"Vi phạm");if(!pr[n])pr[n]=0;if(tp.includes("Khen"))pr[n]++;}); 
-        var ar=[['NV','Khen thưởng',{role:"style"}]]; Object.keys(pr).sort().forEach(k=>{if(pr[k]>0)ar.push([k,pr[k],'#ffc107']);}); 
-        if(ar.length>1) new google.visualization.ColumnChart(document.getElementById('columnchart_reward')).draw(google.visualization.arrayToDataTable(ar),{legend:'none',chartArea:{width:'85%',height:'70%'}}); else document.getElementById('columnchart_reward').innerHTML="<div class='d-flex align-items-center justify-content-center h-100 text-muted'>Trống</div>";
+        var ar=[['NV','Khen thưởng',{role:"style"}]]; Object.keys(pr).sort().forEach(k=>{if(pr[k]>0)ar.push([k,pr[k],'#f59e0b']);}); 
+        if(ar.length>1) new google.visualization.ColumnChart(document.getElementById('columnchart_reward')).draw(google.visualization.arrayToDataTable(ar),{legend:'none', fontName: chartFont, chartArea:{width:'85%',height:'70%'}, backgroundColor: 'transparent'}); else document.getElementById('columnchart_reward').innerHTML="<div class='d-flex align-items-center justify-content-center h-100 text-muted small'>Chưa có dữ liệu</div>";
     }
 
     function exportExcelReport() {
