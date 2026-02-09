@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khoa Dược Dashboard - Premium</title>
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Fonts: Thêm subset vietnamese để hiển thị tốt tiếng Việt -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet">
+    <!-- Bootstrap Icons: Cập nhật phiên bản mới nhất -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Libraries -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <style>
@@ -923,7 +924,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwmPUxotbgY10hu7VZFP5nDXZv3uCDtMGmYBSm5g3XZU5-N7O0g2SkOwGuX8t5_qw9wuA/exec";
     
@@ -938,6 +939,17 @@
         "Ban Lãnh Đạo": ["Nguyễn Thị Hương Giang - Trưởng Khoa", "Trần Thị Huyền Trang - Phó Khoa"],
         "Dược sĩ": ["Phạm Bá Thương", "Lê Thị Thanh Nhàn", "Chu Đài Trang", "Nguyễn Duy Tiến", "Nguyễn Thị Hằng", "Kiều Mạnh Toàn", "Đỗ Thị Nhật Lệ", "Nguyễn Thị Thu Hà", "Hà Thị Thảo", "Nguyễn Tuấn Thành", "Vũ Thị Hồng Hạnh", "Hà Thu Trang", "Đoàn Thị Mai Hương", "Triệu Thị Vỵ"]
     };
+
+    // Helper: Escape HTML to prevent broken UI when data has quotes
+    function escapeHtml(text) {
+        if (!text) return "";
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
     // UI Helpers
     function toggleSidebar() {
@@ -1077,7 +1089,7 @@
         
         if(!question) return;
 
-        historyDiv.innerHTML += `<div class="msg msg-user" style="background: #ecfdf5; color: #047857; align-self: flex-end; margin-left: auto; border-radius: 12px 12px 0 12px; padding: 12px 16px; margin-bottom: 12px; max-width: 85%; font-size: 0.9rem;">${question}</div>`;
+        historyDiv.innerHTML += `<div class="msg msg-user" style="background: #ecfdf5; color: #047857; align-self: flex-end; margin-left: auto; border-radius: 12px 12px 0 12px; padding: 12px 16px; margin-bottom: 12px; max-width: 85%; font-size: 0.9rem;">${escapeHtml(question)}</div>`;
         input.value = '';
         historyDiv.scrollTop = historyDiv.scrollHeight;
         typing.style.display = 'block';
@@ -1109,13 +1121,13 @@
                 chatContext.push({ role: "Lily", content: answer });
 
             } catch(e) {
-                historyDiv.innerHTML += `<div class="msg msg-ai text-danger">Lỗi phản hồi AI.</div>`;
+                historyDiv.innerHTML += `<div class="msg msg-ai text-danger">Lỗi phản hồi AI. Vui lòng thử lại.</div>`;
             }
             historyDiv.scrollTop = historyDiv.scrollHeight;
         })
         .catch(e => {
             typing.style.display = 'none';
-            historyDiv.innerHTML += `<div class="msg msg-ai text-danger">Mất kết nối mạng!</div>`;
+            historyDiv.innerHTML += `<div class="msg msg-ai text-danger">Mất kết nối mạng! Vui lòng kiểm tra lại.</div>`;
         });
     }
 
@@ -1125,14 +1137,18 @@
         const username = document.getElementById('loginUsername').value, pin = document.getElementById('loginPin').value;
         if(!username || !pin) return alert("Vui lòng nhập đầy đủ thông tin!");
         const btn = event.target; const txt = btn.innerHTML; btn.innerHTML = "Đang xử lý..."; btn.disabled = true;
-        fetch(SCRIPT_URL + "?action=login", { method: 'POST', body: JSON.stringify({ username, pin }) }).then(r => r.json()).then(res => {
+        fetch(SCRIPT_URL + "?action=login", { method: 'POST', body: JSON.stringify({ username, pin }) })
+        .then(r => r.json())
+        .then(res => {
             if(res.status === 'success') {
                 currentUser = { username: res.username, name: res.name, role: res.role };
                 sessionStorage.setItem('user', JSON.stringify(currentUser));
                 applyLoginState(); bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
                 loadTaskList();
             } else alert("⛔ " + res.message);
-        }).finally(() => { btn.innerHTML = txt; btn.disabled = false; });
+        })
+        .catch(err => alert("Lỗi kết nối khi đăng nhập."))
+        .finally(() => { btn.innerHTML = txt; btn.disabled = false; });
     }
     
     function logout() { sessionStorage.removeItem('user'); currentUser = null; applyLoginState(); location.reload(); }
@@ -1159,14 +1175,20 @@
 
     function loadTaskList(isPolling = false) { 
         if(!isPolling) document.getElementById('taskTableBody').innerHTML='<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-success"></div></td></tr>'; 
-        fetch(SCRIPT_URL).then(r=>r.json()).then(res=>{ 
-            globalData=res.data; 
+        fetch(SCRIPT_URL)
+        .then(r=>r.json())
+        .then(res=>{ 
+            globalData=res.data || []; 
             
             // Check notifications based on new data
             checkTaskNotifications(globalData);
             
             populateFilter(); 
             renderTable(); 
+        })
+        .catch(e => {
+            console.error("Load failed", e);
+            if(!isPolling) document.getElementById('taskTableBody').innerHTML='<tr><td colspan="7" class="text-center text-danger py-5">Lỗi tải dữ liệu. Vui lòng thử lại.</td></tr>';
         }); 
     }
     
@@ -1223,23 +1245,18 @@
             lastTaskData = newData;
             return;
         }
+        if (!newData) return;
 
-        // 1. Detect New Tasks (Simple logic: ID is not in old data)
         const oldIds = new Set(lastTaskData.map(r => r[0]));
         newData.forEach(row => {
             if (!oldIds.has(row[0])) {
-                // New Task Found
-                let msg = `Công việc mới: ${row[1]}`;
                 addNotification('task', 'Công việc mới', row[1]);
             } else {
-                // 2. Detect Status Changes (e.g. Waiting for approval)
-                // Find old row
                 let oldRow = lastTaskData.find(r => r[0] === row[0]);
                 if (oldRow) {
                     let oldStatus = String(oldRow[2]).trim();
                     let newStatus = String(row[2]).trim();
                     if (oldStatus !== 'Waiting' && newStatus === 'Waiting') {
-                        // Someone submitted report
                         addNotification('waiting', 'Chờ duyệt', `${row[7]} vừa báo cáo hoàn thành: ${row[1]}`);
                     }
                 }
@@ -1251,15 +1268,12 @@
     function checkComplianceNotifications(newData) {
         if (isFirstLoad) {
             lastComplianceLength = newData.length;
-            isFirstLoad = false; // Mark initial load done after both data sets are in
+            isFirstLoad = false;
             return;
         }
 
         if (newData.length > lastComplianceLength) {
-            // New items added
-            let count = newData.length - lastComplianceLength;
-            // Get the last 'count' items (assuming append only)
-            let newItems = newData.slice(lastComplianceLength); // Original data is append-only usually
+            let newItems = newData.slice(lastComplianceLength);
             newItems.forEach(item => {
                 let type = String(item[3]).includes("Khen") ? "Khen thưởng" : "Vi phạm";
                 let person = item[2];
@@ -1286,7 +1300,7 @@
             read: false
         };
         
-        notifications.unshift(noti); // Add to top
+        notifications.unshift(noti);
         updateNotificationUI();
     }
 
@@ -1294,7 +1308,6 @@
         const list = document.getElementById('notificationList');
         const badge = document.getElementById('notiBadge');
         
-        // Update Badge
         const unreadCount = notifications.filter(n => !n.read).length;
         if (unreadCount > 0) {
             badge.innerText = unreadCount;
@@ -1303,7 +1316,6 @@
             badge.style.display = 'none';
         }
 
-        // Render List
         if (notifications.length === 0) {
             list.innerHTML = '<li class="p-4 text-center text-muted small">Không có thông báo mới</li>';
             return;
@@ -1329,14 +1341,12 @@
     function markAllRead() {
         if(notifications.some(n => !n.read)) {
             notifications.forEach(n => n.read = true);
-            // Visual delay to let user see badge disappear
             setTimeout(updateNotificationUI, 1000);
         }
     }
     
     function refreshNotifications() {
-        // Manually trigger data fetch to check updates
-        loadTaskList(true); // true = polling mode, silent UI
+        loadTaskList(true); 
         loadCompliance(true);
     }
 
@@ -1357,7 +1367,7 @@
     function renderTable() {
         const tb = document.getElementById('taskTableBody'); 
         
-        const fMonth = document.getElementById('filterMonth').value; // Get Month Value
+        const fMonth = document.getElementById('filterMonth').value; 
         const fG = document.getElementById('filterGroup').value.toLowerCase().trim();
         const fN = document.getElementById('filterAssignee').value.toLowerCase().trim();
         const fS = document.getElementById('filterStatus').value;
@@ -1365,7 +1375,6 @@
         const fT = document.getElementById('filterText').value.toLowerCase().trim();
         const today = new Date(); today.setHours(0,0,0,0);
         
-        // Calculate Month Filter Range
         let filterStart = null, filterEnd = null;
         if(fMonth) {
             const [y, m] = fMonth.split('-').map(Number);
@@ -1400,18 +1409,14 @@
             // 2. Month Overlap Logic
             let monthMatch = true;
             if (filterStart && filterEnd) {
-                let taskStart = new Date(r[6]); // Created Date
-                let taskEnd = dlRaw ? new Date(dlRaw) : new Date(); // Use deadline or today if active
+                let taskStart = new Date(r[6]); 
+                let taskEnd = dlRaw ? new Date(dlRaw) : new Date(); 
                 
-                // If Done, strictly it finished at taskEnd.
-                // If Active/Overdue, it extends to today or deadline.
-                if (!dlRaw && st !== 'Done') taskEnd = new Date(today.getFullYear() + 1, 0, 1); // No deadline & active -> Future
+                if (!dlRaw && st !== 'Done') taskEnd = new Date(today.getFullYear() + 1, 0, 1); 
                 
-                // Normalize
                 taskStart.setHours(0,0,0,0);
                 taskEnd.setHours(23,59,59,999);
 
-                // Check Overlap: (StartA <= EndB) and (EndA >= StartB)
                 monthMatch = (taskStart <= filterEnd && taskEnd >= filterStart);
             }
 
@@ -1419,11 +1424,10 @@
                    (fN === "" || as.includes(fN)) && 
                    (fD === "" || diff === fD) && 
                    statusMatch && 
-                   monthMatch && // Add month check
+                   monthMatch && 
                    (fT === "" || nm.includes(fT));
         });
         
-        // ... (Sort logic remains the same) ...
         flt.sort((a, b) => {
             const grpA = (a[11] || "").toLowerCase(), grpB = (b[11] || "").toLowerCase(); if (grpA < grpB) return -1; if (grpA > grpB) return 1;
             const statusA = getEffectiveStatus(String(a[2]).trim(), a[6]);
@@ -1480,6 +1484,10 @@
                 : `<div class="d-flex align-items-center" style="${disableControl}"><input type="range" class="form-range me-2" style="width:70px" min="0" max="100" step="10" value="${prog}" onchange="updateProgress('${id}',this.value)"><span class="badge bg-light text-dark border" id="val-${id}" style="width:40px">${prog}%</span></div>`;
 
             let actionBtns = '';
+            // Fix onclick escaping issue
+            let safeName = escapeHtml(name);
+            let safeAssignee = escapeHtml(assignee);
+
             let attachLink = (fileUrl && currentUser && currentUser.role === 'Admin') 
                 ? `<button onclick="openReviewModal('${id}')" class="btn btn-sm btn-white border shadow-sm text-primary" title="Xem báo cáo"><i class="bi bi-file-earmark-text-fill"></i></button>` 
                 : '';
@@ -1499,9 +1507,10 @@
                 if (currentUser && currentUser.role === 'Admin') {
                     actionBtns = `<button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="approveTask('${id}')">Duyệt ngay</button>`;
                 } else {
+                    // FIX: Escaped quotes in sendEmailBackend parameters
                     actionBtns = `<div style="${disableControl}">
                         <button class="btn btn-sm btn-primary-custom py-1 px-2" style="font-size:0.8rem" onclick="openReportModal('${id}')" title="Báo cáo"><i class="bi bi-send-fill"></i></button>
-                        <button class="btn btn-sm btn-white border text-warning ms-1 py-1 px-2" style="font-size:0.8rem" onclick="sendEmailBackend('${id}','${name}','${assignee}','${dlRaw}')" title="Nhắc"><i class="bi bi-envelope-fill"></i></button>
+                        <button class="btn btn-sm btn-white border text-warning ms-1 py-1 px-2" style="font-size:0.8rem" onclick="sendEmailBackend('${id}','${safeName}','${safeAssignee}','${dlRaw}')" title="Nhắc"><i class="bi bi-envelope-fill"></i></button>
                     </div>`;
                 }
             }
@@ -1519,7 +1528,6 @@
                 editBtn = `<button class="btn btn-sm text-muted p-0 ms-2 opacity-50 hover-opacity-100" onclick="openEditTask('${id}')"><i class="bi bi-pencil-square"></i></button>`;
             }
             
-            // Assignee Display Logic (Full Name)
             let assignees = assignee.split(',').map(s => s.trim()).filter(s => s);
             let assigneeHtml = '';
             if(assignees.length > 0) {
