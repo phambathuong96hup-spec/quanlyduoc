@@ -294,6 +294,7 @@
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .admin-only { display: none !important; }
+        .cursor-pointer { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -1446,6 +1447,11 @@
         return colors[Math.abs(hash) % colors.length];
     }
 
+    function startTask(id) {
+        if(!confirm("Bắt đầu thực hiện công việc này? (Trạng thái sẽ chuyển sang Đang làm)")) return;
+        updateProgress(id, 5); // Set 5% to trigger Doing status
+    }
+
     function renderTable() {
         const tb = document.getElementById('taskTableBody'); 
         
@@ -1542,12 +1548,19 @@
 
             let badgeClass = '';
             let statusText = status;
+            let statusBadgeHtml = '';
             
             if (status === 'Done') { badgeClass = 'bg-done'; statusText = 'Hoàn thành'; }
             else if (status === 'Waiting') { badgeClass = 'bg-waiting'; statusText = 'Chờ duyệt'; }
             else if (isOverdue) { badgeClass = 'bg-overdue'; statusText = 'Quá hạn'; }
             else if (status === 'Doing') { badgeClass = 'bg-doing'; statusText = 'Đang làm'; }
             else { badgeClass = 'bg-todo'; statusText = 'Mới tạo'; }
+
+            statusBadgeHtml = `<span class="status-badge ${badgeClass}">${statusText}</span>`;
+            
+            if (status === 'Todo' && isOwner) {
+                 statusBadgeHtml = `<span class="status-badge bg-todo cursor-pointer border border-warning text-warning" onclick="startTask('${id}')" title="Bấm để chuyển sang Đang làm"><i class="bi bi-play-circle-fill me-1"></i> Bắt đầu</span>`;
+            }
 
             let dlHtml = '';
             if (!dlRaw || type === 'Thường quy') {
@@ -1589,10 +1602,10 @@
                 if (currentUser && currentUser.role === 'Admin') {
                     actionBtns = `<button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="approveTask('${id}')">Duyệt ngay</button>`;
                 } else {
-                    // FIX: Escaped quotes in sendEmailBackend parameters
+                    // Refactored to pass only ID
                     actionBtns = `<div style="${disableControl}">
                         <button class="btn btn-sm btn-primary-custom py-1 px-2" style="font-size:0.8rem" onclick="openReportModal('${id}')" title="Báo cáo"><i class="bi bi-send-fill"></i></button>
-                        <button class="btn btn-sm btn-white border text-warning ms-1 py-1 px-2" style="font-size:0.8rem" onclick="sendEmailBackend('${id}','${safeName}','${safeAssignee}','${dlRaw}')" title="Nhắc"><i class="bi bi-envelope-fill"></i></button>
+                        <button class="btn btn-sm btn-white border text-warning ms-1 py-1 px-2" style="font-size:0.8rem" onclick="sendEmailBackend('${id}')" title="Nhắc"><i class="bi bi-envelope-fill"></i></button>
                     </div>`;
                 }
             }
@@ -1622,7 +1635,7 @@
                 <td>
                     ${groupBadge} 
                     <div class="d-flex align-items-center">
-                        <span class="fw-bold text-wrap" style="font-size:0.95rem; color: var(--text-main);">${name}</span>
+                        <span class="fw-bold text-wrap" style="font-size:0.95rem; color: var(--text-main);">${safeName}</span>
                         ${editBtn}
                     </div>
                     <div class="text-muted mt-1 text-wrap d-flex align-items-center gap-1" style="font-size: 0.8em; max-width: 300px;">
@@ -1633,7 +1646,7 @@
                 <td>${slider}</td>
                 <td>${assigneeHtml}</td>
                 <td class="small">${dlHtml}</td>
-                <td><span class="status-badge ${badgeClass}">${statusText}</span></td>
+                <td>${statusBadgeHtml}</td>
                 <td class="text-center">${actionBtns}</td>
             </tr>`);
         });
@@ -1897,18 +1910,54 @@
         bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
     }
 
-    function sendEmailBackend(id,t,p,d){ 
-        if(!confirm(`Gửi mail nhắc nhở cho ${p}?`))return; 
-        let dl=d?new Date(d).toLocaleDateString('vi-VN'):'Sớm nhất'; const btn=event.target.closest('button'); const txt=btn.innerHTML; btn.innerHTML="..."; btn.disabled=true; 
-        fetch(SCRIPT_URL+"?action=send_email_manual",{method:'POST',body:JSON.stringify({taskName:t,assignee:p,deadline:dl})})
-        .then(r=>r.json()).then(res=>{showToast(res.message, res.status === 'success' ? 'success' : 'danger')}).finally(()=>{btn.innerHTML=txt;btn.disabled=false}); 
+    function sendEmailBackend(id){ 
+        // 1. Find task data
+        const task = globalData.find(r => r[0] == id);
+        if (!task) return showToast("Không tìm thấy dữ liệu công việc!", 'danger');
+
+        const taskName = task[1];
+        const assignee = task[7];
+        const dlRaw = task[9] || task[4];
+        let dl = dlRaw ? new Date(dlRaw).toLocaleDateString('vi-VN') : 'Sớm nhất';
+
+        if(!confirm(`Gửi mail nhắc nhở cho ${assignee}?`)) return; 
+        
+        const btn = event.target.closest('button'); 
+        const txt = btn.innerHTML; 
+        btn.innerHTML = "..."; 
+        btn.disabled = true; 
+        
+        fetch(SCRIPT_URL+"?action=send_email_manual", {
+            method: 'POST',
+            body: JSON.stringify({
+                taskName: taskName,
+                assignee: assignee,
+                deadline: dl
+            })
+        })
+        .then(r=>r.json())
+        .then(res=>{
+            showToast(res.message, res.status === 'success' ? 'success' : 'danger')
+        })
+        .catch(err => showToast("Lỗi kết nối!", 'danger'))
+        .finally(()=>{
+            btn.innerHTML = txt;
+            btn.disabled = false
+        }); 
     }
     
     function triggerBulkEmail() { 
         if(!currentUser || currentUser.role !== 'Admin') return showToast("⛔ Chỉ Admin mới có quyền này!", 'warning'); 
-        const pending=globalData.filter(r=>String(r[2]).trim()!=='Done'); 
+        
+        // Cập nhật logic: Không gửi mail cho các việc đã xong (Done) HOẶC đang chờ duyệt (Waiting)
+        const pending=globalData.filter(r=> {
+            const status = String(r[2]).trim();
+            return status !== 'Done' && status !== 'Waiting';
+        }); 
+        
         if(pending.length===0) return showToast("Không có việc cần gửi!", 'primary'); 
-        if(!confirm(`Gửi mail nhắc việc cho ${pending.length} đầu việc chưa xong?`))return; 
+        if(!confirm(`Gửi mail nhắc việc cho ${pending.length} đầu việc chưa xong (đã loại trừ việc đang chờ duyệt)?`))return; 
+        
         const btn=event.target;const t=btn.innerText;btn.innerText="⏳ Gửi...";btn.disabled=true; 
         fetch(SCRIPT_URL+"?action=send_bulk_email",{method:'POST',body:JSON.stringify({taskIds:pending.map(r=>r[0]),sender:currentUser.name})})
         .then(r=>r.json()).then(res=>showToast(res.message, 'success')).finally(()=>{btn.innerText=t;btn.disabled=false}); 
