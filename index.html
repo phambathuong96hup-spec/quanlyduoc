@@ -936,7 +936,8 @@
     
     let globalData = [], globalCompliance = [], currentUser = null;
     let notifications = [];
-    let isFirstLoad = true;
+    let isFirstTaskLoad = true;
+    let isFirstComplianceLoad = true;
     let lastTaskData = [];
     let lastComplianceLength = 0;
     
@@ -1050,6 +1051,7 @@
 
     initUI();
     loadTaskList();
+    loadCompliance();
     checkSession();
     
     // Auto Poll for Updates every 60s
@@ -1323,10 +1325,12 @@
     }
 
     function checkTaskNotifications(newData) {
-        if (isFirstLoad) {
+        if (isFirstTaskLoad) {
             lastTaskData = newData;
+            isFirstTaskLoad = false;
             return;
         }
+        
         if (!newData) return;
 
         const oldIds = new Set(lastTaskData.map(r => r[0]));
@@ -1334,24 +1338,15 @@
             if (!oldIds.has(row[0])) {
                 addNotification('task', 'Công việc mới', row[1]);
                 showToast(`Công việc mới: ${row[1]}`, 'primary');
-            } else {
-                let oldRow = lastTaskData.find(r => r[0] === row[0]);
-                if (oldRow) {
-                    let oldStatus = String(oldRow[2]).trim();
-                    let newStatus = String(row[2]).trim();
-                    if (oldStatus !== 'Waiting' && newStatus === 'Waiting') {
-                        addNotification('waiting', 'Chờ duyệt', `${row[7]} vừa báo cáo hoàn thành: ${row[1]}`);
-                    }
-                }
             }
         });
         lastTaskData = newData;
     }
 
     function checkComplianceNotifications(newData) {
-        if (isFirstLoad) {
+        if (isFirstComplianceLoad) {
             lastComplianceLength = newData.length;
-            isFirstLoad = false;
+            isFirstComplianceLoad = false;
             return;
         }
 
